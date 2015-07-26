@@ -1,6 +1,7 @@
 #include "io.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <limits>
 
 static std::ifstream File;
@@ -32,10 +33,8 @@ void Jump(char Character)
 
 void Open(char* Path)
 {
+	File.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	File.open(Path);
-
-	if (!File)
-		throw std::exception("Unable to open file");
 }
 
 char GetNextInstruction()
