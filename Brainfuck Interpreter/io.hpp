@@ -3,17 +3,17 @@
 #include <cstdint>
 #include <fstream>
 
-void OutputByte(std::uint8_t);
+void OutputByte(const std::uint8_t);
 
 std::uint8_t InputByte();
 
 std::streampos GetNextInstructionPointer();
 
-void Jump(std::streampos);
+void Jump(const std::streampos&);
 
-void Jump(char);
+void Jump(const char);
 
-void Open(char*);
+void Open(const char* const);
 
 char GetNextInstruction();
 

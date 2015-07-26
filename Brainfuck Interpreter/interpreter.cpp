@@ -11,17 +11,17 @@ static std::list<std::uint8_t> Memory { 0 };
 static std::list<std::uint8_t>::iterator Pointer = Memory.begin();
 static std::stack<std::streampos> JumpTable;
 
-static bool IsFirst(std::list<std::uint8_t>::iterator Pointer)
+static bool IsFirst(const std::list<std::uint8_t>::iterator& Pointer)
 {
 	return Pointer == Memory.begin();
 }
 
-static bool IsLast(std::list<std::uint8_t>::iterator Pointer)
+static bool IsLast(const std::list<std::uint8_t>::iterator& Pointer)
 {
 	return (Pointer != Memory.end()) && (std::next(Pointer) == Memory.end());
 }
 
-void ProcessCharacter(char Command)
+void ProcessCharacter(const char Command)
 {
 	switch (Command)
 	{

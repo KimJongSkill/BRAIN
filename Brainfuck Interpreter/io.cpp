@@ -6,7 +6,7 @@
 
 static std::ifstream File;
 
-void OutputByte(std::uint8_t Character)
+void OutputByte(const std::uint8_t Character)
 {
 	std::cout << Character;
 }
@@ -21,17 +21,17 @@ std::streampos GetNextInstructionPointer()
 	return File.tellg();
 }
 
-void Jump(std::streampos InstructionPointer)
+void Jump(const std::streampos& InstructionPointer)
 {
 	File.seekg(InstructionPointer);
 }
 
-void Jump(char Character)
+void Jump(const char Character)
 {
 	File.ignore(std::numeric_limits<std::streamsize>::max(), Character);
 }
 
-void Open(char* Path)
+void Open(const char* const Path)
 {
 	File.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	File.open(Path);
