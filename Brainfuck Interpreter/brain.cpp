@@ -21,16 +21,16 @@ int main(int argc, char* argv[])
 	try
 	{
 		Open(argv[1]);
+
+		while (FileIsGood())
+			ProcessCharacter(GetNextInstruction());
 	}
 	catch (const std::exception& Exception)
 	{
-		std::cout << Exception.what();
+		std::cout << Exception.what() << std::endl;
 		
 		return EXIT_FAILURE;
 	}
-
-	while (FileIsGood())
-		ProcessCharacter(GetNextInstruction());
 
 	return EXIT_SUCCESS;
 }

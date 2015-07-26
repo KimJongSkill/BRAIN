@@ -5,6 +5,7 @@
 #include <stack>
 #include <fstream>
 #include <iterator>
+#include <string>
 
 static std::list<std::uint8_t> Memory { 0 };
 static std::list<std::uint8_t>::iterator Pointer = Memory.begin();
@@ -56,7 +57,12 @@ void ProcessCharacter(char Command)
 		break;
 	case ']':
 		if (*Pointer)
-			Jump(JumpTable.top());
+		{
+			if (JumpTable.size() > 0)
+				Jump(JumpTable.top());
+			else
+				throw std::runtime_error(std::string("Unbalanced ']' @ character ") + std::to_string(GetNextInstructionPointer() - std::streamoff(1)));
+		}
 		else
 			JumpTable.pop();
 	default:
