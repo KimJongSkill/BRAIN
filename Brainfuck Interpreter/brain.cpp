@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 	{
 		Open(argv[1]);
 
-		while (FileIsGood())
+		while (NotEOF())
 			ProcessCharacter(GetNextInstruction());
 	}
 	catch (const std::exception& Exception)

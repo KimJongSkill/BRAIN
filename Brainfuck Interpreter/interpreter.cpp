@@ -9,7 +9,7 @@
 
 static std::list<std::uint8_t> Memory { 0 };
 static std::list<std::uint8_t>::iterator Pointer = Memory.begin();
-static std::stack<std::streampos> JumpTable;
+static std::stack<std::string::size_type> JumpTable;
 
 static bool IsFirst(const std::list<std::uint8_t>::iterator& Pointer)
 {

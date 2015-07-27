@@ -7,9 +7,9 @@ void OutputByte(const std::uint8_t);
 
 std::uint8_t InputByte();
 
-std::streampos GetNextInstructionPointer();
+std::string::size_type GetNextInstructionPointer();
 
-void Jump(const std::streampos&);
+void Jump(std::string::size_type);
 
 void Jump(const char);
 
@@ -17,4 +17,4 @@ void Open(const char* const);
 
 char GetNextInstruction();
 
-bool FileIsGood();
+bool NotEOF();

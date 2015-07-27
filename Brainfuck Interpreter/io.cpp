@@ -3,8 +3,11 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
+#include <string>
+#include <sstream>
 
-static std::ifstream File;
+static std::string Source;
+static std::string::size_type InstructionPointer;
 
 void OutputByte(const std::uint8_t Character)
 {
@@ -16,33 +19,41 @@ std::uint8_t InputByte()
 	return std::cin.get();
 }
 
-std::streampos GetNextInstructionPointer()
+std::string::size_type GetNextInstructionPointer()
 {
-	return File.tellg();
+	return InstructionPointer;
 }
 
-void Jump(const std::streampos& InstructionPointer)
+void Jump(std::string::size_type NewPointer)
 {
-	File.seekg(InstructionPointer);
+	InstructionPointer = NewPointer;
 }
 
 void Jump(const char Character)
 {
-	File.ignore(std::numeric_limits<std::streamsize>::max(), Character);
+	Source.find_first_of(Character, InstructionPointer);
 }
 
 void Open(const char* const Path)
 {
+	std::stringstream Stream;
+	std::ifstream File;
+	
 	File.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	File.open(Path);
+
+	Stream << File.rdbuf();
+
+	Source = Stream.str();
+	InstructionPointer = 0;
 }
 
 char GetNextInstruction()
 {
-	return File.get();
+	return Source.at(InstructionPointer++);
 }
 
-bool FileIsGood()
+bool NotEOF()
 {
-	return File.good();
+	return InstructionPointer != Source.size();
 }
