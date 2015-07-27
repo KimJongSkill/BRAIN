@@ -56,15 +56,15 @@ void ProcessCharacter(const char Command)
 			Jump(']');
 		break;
 	case ']':
-		if (*Pointer)
+		if (JumpTable.size() > 0)
 		{
-			if (JumpTable.size() > 0)
+			if (*Pointer)
 				Jump(JumpTable.top());
 			else
-				throw std::runtime_error(std::string("Unbalanced ']' @ character ") + std::to_string(GetNextInstructionPointer() - std::streamoff(1)));
+				JumpTable.pop();
 		}
 		else
-			JumpTable.pop();
+			throw std::runtime_error(std::string("Unbalanced ']' @ character ") + std::to_string(GetNextInstructionPointer() - 1));
 	default:
 		break;
 	}
