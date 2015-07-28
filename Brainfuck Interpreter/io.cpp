@@ -8,6 +8,7 @@
 
 static std::string Source;
 static std::string::size_type InstructionPointer;
+static char Buffer[1024];
 
 void OutputByte(const std::uint8_t Character)
 {
@@ -62,6 +63,8 @@ void Open(const char* const Path)
 
 	Source = Stream.str();
 	InstructionPointer = 0;
+
+	std::cout.rdbuf()->pubsetbuf(Buffer, sizeof(Buffer));
 }
 
 char GetNextInstruction()
