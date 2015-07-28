@@ -29,9 +29,25 @@ void Jump(std::string::size_type NewPointer)
 	InstructionPointer = NewPointer;
 }
 
-void Jump(const char Character)
+void JumpEndOfLoop()
 {
-	Source.find_first_of(Character, InstructionPointer);
+	int Counter = 1;
+	std::string::size_type Index = InstructionPointer;
+
+	do
+	{
+		Index = Source.find_first_of("[]", Index + 1);
+		
+		if (Index == std::string::npos)
+			throw std::runtime_error(std::string("Unbalanced '[' @ character ") + std::to_string(GetNextInstructionPointer() - 1));
+		else if (Source[Index] == ']')
+			--Counter;
+		else if (Source[Index] == '[')
+			++Counter;
+	} while (Counter);
+
+	// We need the +1 to skip the ']' character
+	Jump(Index + 1);
 }
 
 void Open(const char* const Path)

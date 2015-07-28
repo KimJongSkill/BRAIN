@@ -53,7 +53,7 @@ void ProcessCharacter(const char Command)
 		if (*Pointer)
 			JumpTable.push(GetNextInstructionPointer());
 		else
-			Jump(']');
+			JumpEndOfLoop();
 		break;
 	case ']':
 		if (JumpTable.size() > 0)

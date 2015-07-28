@@ -11,7 +11,7 @@ std::string::size_type GetNextInstructionPointer();
 
 void Jump(std::string::size_type);
 
-void Jump(const char);
+void JumpEndOfLoop();
 
 void Open(const char* const);
 
