@@ -58,9 +58,9 @@ void Instruction::Set(Instruction* x)
 	Data = reinterpret_cast<std::intptr_t>(x);
 }
 
-Instruction::Type Instruction::Query() const
+std::pair<Instruction::Type, std::intptr_t> Instruction::Query() const
 {
-	return Command;
+	return std::make_pair(Command, Data);
 }
 
 void Instruction::SetParent(ProgramData* Adopter)
@@ -166,7 +166,7 @@ ProgramData::~ProgramData()
 
 void ProgramData::Run()
 {
-	while (InstructionPointer->Query() != Instruction::Type::Stop)
+	while (InstructionPointer->Query().first != Instruction::Type::Stop)
 	{
 		auto* Temp = InstructionPointer;
 		++InstructionPointer; // Might cause problems

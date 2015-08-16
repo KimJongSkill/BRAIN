@@ -5,8 +5,6 @@
 #include <utility>
 #include <cstdint>
 
-#include <iostream>
-
 struct Memory
 {
 	typedef std::list<std::int8_t> Type;
@@ -43,7 +41,7 @@ public:
 	void Execute() const;
 	void Modify(std::intptr_t);
 	void Set(Instruction*);
-	Type Query() const;
+	std::pair<Type, std::intptr_t> Query() const;
 	static void SetParent(ProgramData*);
 	static void Orphan(ProgramData*);
 
