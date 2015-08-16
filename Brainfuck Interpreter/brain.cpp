@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <cstring>
 
+static char Buffer[1024];
+
 void Usage()
 {
 	std::cout << "BRAIN: Brainfuck Interpreter\n\n";
@@ -33,34 +35,27 @@ int main(int argc, char* argv[])
 		Usage();
 		return EXIT_FAILURE;
 	}
+	
+	std::cout.rdbuf()->pubsetbuf(Buffer, sizeof(Buffer));
 
 	std::chrono::steady_clock::time_point Start;
-	std::size_t Instructions = 0;
 	if (Time)
 		Start = std::chrono::steady_clock::now();
 		
 	try
 	{
-		Open(Path);
-
-		while (NotEOF())
-		{
-			if (Time)
-				++Instructions;
-			ProcessCharacter(GetNextInstruction());
-		}
+		ProgramData Program(Path);
+		Program.Run();
 	}
 	catch (const std::exception& Exception)
 	{
 		std::cout << Exception.what() << std::endl;
 		
-		throw;
-
 		return EXIT_FAILURE;
 	}
 
 	if (Time)
-		std::cout << "\nExecuted " << Instructions << " instructions in "
+		std::cout << "\nProgram execution finished in "
 		<< std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - Start).count()
 		<< " ms\n";
 
