@@ -40,8 +40,10 @@ void Instruction::Execute() const
 			Parent->InstructionPointer = reinterpret_cast<Instruction*>(Data);
 		break;
 	case Type::Jump:
-			Parent->InstructionPointer = reinterpret_cast<Instruction*>(Data);
-			break;
+		Parent->InstructionPointer = reinterpret_cast<Instruction*>(Data);
+		break;
+	case Type::Reset:
+		*Parent->Pointer = 0;
 		break;
 	case Type::Nop:
 		break;
@@ -136,16 +138,34 @@ ProgramData::ProgramData(const char* const Path)
 		case ']':
 			if (JumpTable.size() > 0)
 			{
+				// Try to detect a "[-]" and replace it with a Reset instruction
+				auto TextIterator = std::next(Text.rbegin());
+				if (TextIterator->Query().first == Instruction::Type::ConditionalJump)
+				{
+					std::advance(TextIterator, -1);
+					
+					if (TextIterator->Query().first == Instruction::Type::Addition)
+					{
+						Text.pop_back();
+						Text.pop_back();
+						JumpTable.pop();
+
+						Text.emplace_back(Instruction::Type::Reset);
+						Last = Instruction::Type::Reset;
+						break;
+					}
+				}
+				
 				Text.emplace_back(Instruction::Type::Jump, JumpTable.top());
 				JumpTable.top()->Set(&Text.back() + 1);
 				JumpTable.pop();
+
+				Last = Instruction::Type::Jump;
 			}
 			else
 			{
 				throw std::runtime_error("Unbalanced ']'");
 			}
-
-			Last = Instruction::Type::Jump;
 			break;
 		}
 	}
