@@ -92,6 +92,14 @@ ProgramData::ProgramData(const char* const Path)
 		if (Last == x)
 		{
 			Text.back().Modify(y);
+
+			// Remove instructions that have no effect
+			if (!Text.back().Query().second)
+			{
+				Text.pop_back();
+
+				Last = Instruction::Type::Nop;
+			}
 		}
 		else
 		{
@@ -138,6 +146,15 @@ ProgramData::ProgramData(const char* const Path)
 		case ']':
 			if (JumpTable.size() > 0)
 			{
+				// Remove empty loops
+				if (Text.back().Query().first == Instruction::Type::ConditionalJump)
+				{
+					Text.pop_back();
+					JumpTable.pop();
+
+					Last = Instruction::Type::Nop;
+				}
+
 				// Try to detect a "[-]" and replace it with a Reset instruction
 				auto TextIterator = std::next(Text.rbegin());
 				if (TextIterator->Query().first == Instruction::Type::ConditionalJump)
