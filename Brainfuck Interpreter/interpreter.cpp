@@ -158,12 +158,9 @@ ProgramData::ProgramData(const char* const Path)
 				}
 
 				// Try to detect a "[-]" and replace it with a Reset instruction
-				auto TextIterator = std::next(Text.rbegin());
-				if (TextIterator->Query().first == Instruction::Type::LoopStart)
+				if (std::next(Text.rbegin())->Query().first == Instruction::Type::LoopStart)
 				{
-					std::advance(TextIterator, -1);
-
-					if (TextIterator->Query().first == Instruction::Type::Addition)
+					if (Text.back().Query().first == Instruction::Type::Addition)
 					{
 						Text.pop_back();
 						Text.pop_back();
