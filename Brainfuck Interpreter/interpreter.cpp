@@ -153,6 +153,7 @@ ProgramData::ProgramData(const char* const Path)
 					JumpTable.pop();
 
 					Last = Instruction::Type::Nop;
+					break;
 				}
 
 				// Try to detect a "[-]" and replace it with a Reset instruction
