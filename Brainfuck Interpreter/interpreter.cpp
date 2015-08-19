@@ -207,3 +207,23 @@ void ProgramData::Run()
 	while (InstructionPointer->Query().first != Instruction::Type::Stop)
 		InstructionPointer++->Execute();
 }
+
+bool operator==(const Instruction& x, Instruction::Type y)
+{
+	return x.Query().first == y;
+}
+
+bool operator==(Instruction::Type x, const Instruction& y)
+{
+	return y == x;
+}
+
+bool operator!=(const Instruction& x, Instruction::Type y)
+{
+	return !(x == y);
+}
+bool operator!=(Instruction::Type x, const Instruction& y)
+{
+	return y != x;
+}
+

@@ -52,3 +52,9 @@ private:
 	std::intptr_t Data;
 	static ProgramData* Parent;
 };
+
+inline bool operator==(const Instruction& x, Instruction::Type y);
+inline bool operator==(Instruction::Type x, const Instruction& y);
+
+inline bool operator!=(const Instruction& x, Instruction::Type y);
+inline bool operator!=(Instruction::Type x, const Instruction& y);
