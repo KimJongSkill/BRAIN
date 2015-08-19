@@ -46,8 +46,6 @@ void Instruction::Execute() const
 	case Type::Reset:
 		*Parent->Pointer = 0;
 		break;
-	case Type::Nop:
-		break;
 	}
 }
 
