@@ -34,7 +34,7 @@ public:
 class Instruction
 {
 public:
-	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Stop };
+	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Stop };
 
 	explicit Instruction(Type, std::intptr_t = 0);
 	Instruction(Type, Instruction*);
@@ -43,6 +43,8 @@ public:
 	void Modify(std::intptr_t);
 	void Set(Instruction*);
 	std::pair<Type, std::intptr_t> Query() const;
+
+	static void AdvancePointer(std::ptrdiff_t Offset);
 
 	static void SetParent(ProgramData*);
 	static void Orphan(ProgramData*);

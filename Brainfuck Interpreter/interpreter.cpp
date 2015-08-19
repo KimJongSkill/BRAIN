@@ -5,6 +5,7 @@
 #include <utility>
 #include <string>
 #include <stack>
+#include <algorithm>
 
 Instruction::Instruction(Type x, std::intptr_t y) : Command(x), Data(y) { }
 
@@ -17,14 +18,7 @@ void Instruction::Execute() const
 	switch (Command)
 	{
 	case Type::MovePointer:
-		Parent->Cells.Index += Data;
-
-		for (;Parent->Cells.Index < Parent->Cells.Limits.first; --Parent->Cells.Limits.first)
-			Parent->Cells.Data.emplace_front(0);
-		for (;Parent->Cells.Index > Parent->Cells.Limits.second; ++Parent->Cells.Limits.second)
-			Parent->Cells.Data.emplace_back(0);
-
-		std::advance(Parent->Pointer, Data);
+		AdvancePointer(Data);
 		break;
 	case Type::Addition:
 		*Parent->Pointer += Data;
@@ -46,6 +40,17 @@ void Instruction::Execute() const
 	case Type::Reset:
 		*Parent->Pointer = 0;
 		break;
+	case Type::Multiplication:
+		// The first half of the Value contains
+		// the offset and the second the multiplication value
+		auto Offset = Data >> (sizeof(std::ptrdiff_t) * 4);
+		auto Value1 = Data & static_cast<std::intptr_t>(std::pow(2, sizeof(std::ptrdiff_t) * 4) - 1);
+		auto Value2 = *Parent->Pointer;
+
+		AdvancePointer(Offset);
+		*Parent->Pointer += Value1 * Value2;
+		std::advance(Parent->Pointer, -Offset);
+		break;
 	}
 }
 
@@ -62,6 +67,18 @@ void Instruction::Set(Instruction* x)
 std::pair<Instruction::Type, std::intptr_t> Instruction::Query() const
 {
 	return std::make_pair(Command, Data);
+}
+
+void Instruction::AdvancePointer(std::ptrdiff_t Offset)
+{
+	Parent->Cells.Index += Offset;
+
+	for (;Parent->Cells.Index < Parent->Cells.Limits.first; --Parent->Cells.Limits.first)
+		Parent->Cells.Data.emplace_front(0);
+	for (;Parent->Cells.Index > Parent->Cells.Limits.second; ++Parent->Cells.Limits.second)
+		Parent->Cells.Data.emplace_back(0);
+
+	std::advance(Parent->Pointer, Offset);
 }
 
 void Instruction::SetParent(ProgramData* Adopter)
@@ -170,8 +187,66 @@ ProgramData::ProgramData(const char* const Path)
 					}
 				}
 
+				Instruction* EndPointer = std::data(Text) + std::size(Text);
+
+				/*
+				*	If this is loop only contains MovePointer
+				*	and Addition instructions, then we should be
+				*	able to replace it with Multiplication instructions
+				*/
+				if (std::all_of(std::next(JumpTable.top()), EndPointer, [](const Instruction& x)
+				{ return x == Instruction::Type::Addition || x == Instruction::Type::MovePointer; }))
+				{
+					std::intptr_t Offset = 0;
+					// Offset, Value
+					std::list<std::pair<std::intptr_t, std::intptr_t>> Operations;
+
+					for (auto Iterator = std::next(JumpTable.top()); Iterator != EndPointer; ++Iterator)
+					{
+						if (*Iterator == Instruction::Type::MovePointer)
+							Offset += Iterator->Query().second;
+						else if (*Iterator == Instruction::Type::Addition)
+							Operations.emplace_back(Offset, Iterator->Query().second);
+					}
+
+					/*
+					*	Make sure the Pointer ends up were it started
+					*	and only 1 was subtracted from Cell #0
+					*/
+					if (Offset == 0)
+					{
+						if (std::count_if(std::cbegin(Operations), std::cend(Operations), [](std::pair<std::intptr_t, std::intptr_t> x)
+						{ return x.first == 0; }) == 1)
+						{
+							auto Cell0 = std::find_if(std::cbegin(Operations), std::cend(Operations), [](std::pair<std::intptr_t, std::intptr_t> x)
+							{ return x.first == 0; });
+
+							if (Cell0->second == -1)
+							{
+								/*
+								*	We cannot use std::vector::erase because
+								*	we have a pointer, not an iterator, so
+								*	we have to remove the elements one at a time
+								*/
+								while (JumpTable.top() <= &Text.back())
+									Text.pop_back();
+								JumpTable.pop();
+								
+								for (const auto& Operation : Operations)
+								{
+									if (Operation.first)
+										Text.emplace_back(Instruction::Type::Multiplication, Operation.first << (sizeof(std::ptrdiff_t) * 4) | Operation.second);
+								}
+								Text.emplace_back(Instruction::Type::Reset);
+
+								break;
+							}
+						}
+					}
+				}
+
 				Text.emplace_back(Instruction::Type::LoopEnd, std::next(JumpTable.top()));
-				JumpTable.top()->Set(std::data(Text) + std::size(Text));
+				JumpTable.top()->Set(EndPointer);
 				JumpTable.pop();
 
 				Last = Instruction::Type::LoopEnd;
