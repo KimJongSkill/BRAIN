@@ -6,7 +6,7 @@
 
 void OutputByte(const std::uint8_t Character)
 {
-	std::cout << Character;
+	std::cout.put(Character);
 }
 
 std::uint8_t InputByte()
