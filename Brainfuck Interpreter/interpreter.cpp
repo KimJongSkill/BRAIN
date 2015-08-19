@@ -192,8 +192,10 @@ ProgramData::ProgramData(const char* const Path)
 	if (!JumpTable.empty())
 		throw std::runtime_error("Unbalanced '['");
 
-	// Ensure that we don't jump out of bounds
-	// if the program ends with a ']'
+	/*
+	*	Ensure that we don't jump out of bounds
+	*	if the program ends with a ']'
+	*/
 	Text.emplace_back(Instruction::Type::Stop);
 	InstructionPointer = &Text.front();
 }
@@ -206,9 +208,5 @@ ProgramData::~ProgramData()
 void ProgramData::Run()
 {
 	while (InstructionPointer->Query().first != Instruction::Type::Stop)
-	{
-		auto* Temp = InstructionPointer;
-		++InstructionPointer; // Might cause problems
-		Temp->Execute();
-	}
+		InstructionPointer++->Execute();
 }

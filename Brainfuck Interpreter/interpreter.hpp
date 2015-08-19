@@ -27,6 +27,7 @@ class ProgramData
 public:
 	explicit ProgramData(const char* const Path);
 	~ProgramData();
+
 	void Run();
 };
 
@@ -42,11 +43,12 @@ public:
 	void Modify(std::intptr_t);
 	void Set(Instruction*);
 	std::pair<Type, std::intptr_t> Query() const;
+
 	static void SetParent(ProgramData*);
 	static void Orphan(ProgramData*);
 
 private:
-	Type Command;
+	const Type Command;
 	std::intptr_t Data;
 	static ProgramData* Parent;
 };
