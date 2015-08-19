@@ -35,12 +35,13 @@ void Instruction::Execute() const
 	case Type::Output:
 		OutputByte(*Parent->Pointer);
 		break;
-	case Type::ConditionalJump:
-		if (!*Parent->Pointer)
+	case Type::LoopStart:
+		if (*Parent->Pointer == 0)
 			Parent->InstructionPointer = reinterpret_cast<Instruction*>(Data);
 		break;
-	case Type::Jump:
-		Parent->InstructionPointer = reinterpret_cast<Instruction*>(Data);
+	case Type::LoopEnd:
+		if (*Parent->Pointer != 0)
+			Parent->InstructionPointer = reinterpret_cast<Instruction*>(Data);
 		break;
 	case Type::Reset:
 		*Parent->Pointer = 0;
@@ -138,16 +139,16 @@ ProgramData::ProgramData(const char* const Path)
 			Last = Instruction::Type::Input;
 			break;
 		case '[':
-			Text.emplace_back(Instruction::Type::ConditionalJump);
+			Text.emplace_back(Instruction::Type::LoopStart);
 			JumpTable.push(&Text.back());
-
-			Last = Instruction::Type::ConditionalJump;
+			
+			Last = Instruction::Type::LoopStart;
 			break;
 		case ']':
 			if (JumpTable.size() > 0)
 			{
 				// Remove empty loops
-				if (Text.back().Query().first == Instruction::Type::ConditionalJump)
+				if (Text.back().Query().first == Instruction::Type::LoopStart)
 				{
 					Text.pop_back();
 					JumpTable.pop();
@@ -158,10 +159,10 @@ ProgramData::ProgramData(const char* const Path)
 
 				// Try to detect a "[-]" and replace it with a Reset instruction
 				auto TextIterator = std::next(Text.rbegin());
-				if (TextIterator->Query().first == Instruction::Type::ConditionalJump)
+				if (TextIterator->Query().first == Instruction::Type::LoopStart)
 				{
 					std::advance(TextIterator, -1);
-					
+
 					if (TextIterator->Query().first == Instruction::Type::Addition)
 					{
 						Text.pop_back();
@@ -173,12 +174,12 @@ ProgramData::ProgramData(const char* const Path)
 						break;
 					}
 				}
-				
-				Text.emplace_back(Instruction::Type::Jump, JumpTable.top());
-				JumpTable.top()->Set(&Text.back() + 1);
+
+				Text.emplace_back(Instruction::Type::LoopEnd, std::next(JumpTable.top()));
+				JumpTable.top()->Set(std::data(Text) + std::size(Text));
 				JumpTable.pop();
 
-				Last = Instruction::Type::Jump;
+				Last = Instruction::Type::LoopEnd;
 			}
 			else
 			{

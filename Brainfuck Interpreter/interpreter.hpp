@@ -33,7 +33,7 @@ public:
 class Instruction
 {
 public:
-	enum class Type { Nop, MovePointer, Addition, Input, Output, Jump, ConditionalJump, Reset, Stop };
+	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Stop };
 
 	explicit Instruction(Type, std::intptr_t = 0);
 	Instruction(Type, Instruction*);
