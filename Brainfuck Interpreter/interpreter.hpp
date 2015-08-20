@@ -38,6 +38,7 @@ public:
 
 	explicit Instruction(Type, std::intptr_t = 0);
 	Instruction(Type, Instruction*);
+	Instruction(Type, std::int32_t Offset, std::int32_t Value);
 
 	void Execute() const;
 	void Modify(std::intptr_t);
@@ -51,7 +52,11 @@ public:
 
 private:
 	const Type Command;
-	std::intptr_t Data;
+	union
+	{
+		std::intptr_t Data;
+		std::int32_t SmallData[2];
+	};
 	static ProgramData* Parent;
 };
 

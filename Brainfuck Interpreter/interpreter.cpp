@@ -11,6 +11,8 @@ Instruction::Instruction(Type x, std::intptr_t y) : Command(x), Data(y) { }
 
 Instruction::Instruction(Type x, Instruction* y) : Command(x), Data(reinterpret_cast<std::intptr_t>(y)) { }
 
+Instruction::Instruction(Type x, std::int32_t y, std::int32_t z) : Command(x), SmallData{ y, z } { }
+
 ProgramData* Instruction::Parent = nullptr;
 
 void Instruction::Execute() const
@@ -43,13 +45,11 @@ void Instruction::Execute() const
 	case Type::Multiplication:
 		// The first half of the Value contains
 		// the offset and the second the multiplication value
-		auto Offset = Data >> (sizeof(std::ptrdiff_t) * 4);
-		auto Value1 = Data & static_cast<std::intptr_t>(std::pow(2, sizeof(std::ptrdiff_t) * 4) - 1);
 		auto Value2 = *Parent->Pointer;
 
-		AdvancePointer(Offset);
-		*Parent->Pointer += Value1 * Value2;
-		std::advance(Parent->Pointer, -Offset);
+		AdvancePointer(SmallData[0]);
+		*Parent->Pointer += SmallData[1] * Value2;
+		std::advance(Parent->Pointer, -SmallData[0]);
 		break;
 	}
 }
@@ -235,7 +235,7 @@ ProgramData::ProgramData(const char* const Path)
 								for (const auto& Operation : Operations)
 								{
 									if (Operation.first)
-										Text.emplace_back(Instruction::Type::Multiplication, Operation.first << (sizeof(std::ptrdiff_t) * 4) | Operation.second);
+										Text.emplace_back(Instruction::Type::Multiplication, Operation.first, Operation.second);
 								}
 								Text.emplace_back(Instruction::Type::Reset);
 
