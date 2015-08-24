@@ -238,6 +238,7 @@ ProgramData::ProgramData(const char* const Path)
 										Text.emplace_back(Instruction::Type::Multiplication, Operation.first, Operation.second);
 								}
 								Text.emplace_back(Instruction::Type::Reset);
+								Last = Instruction::Type::Reset;
 
 								break;
 							}
