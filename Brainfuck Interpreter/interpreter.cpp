@@ -10,7 +10,7 @@
 
 Instruction::Instruction(Type x, std::intptr_t y) : Command(x), Data(y) { }
 
-Instruction::Instruction(Type x, Instruction* y) : Command(x), Data(reinterpret_cast<std::intptr_t>(y)) { }
+Instruction::Instruction(Type x, Instruction* y) : Command(x), Pointer(y) { }
 
 Instruction::Instruction(Type x, std::int32_t y, std::int32_t z) : Command(x), SmallData{ y, z } { }
 
@@ -25,47 +25,32 @@ void Instruction::Execute() const
 		AdvancePointer(Data);
 		break;
 	case Type::Addition:
-		*Parent->Pointer += Data;
+		*Parent->DataPointer += Data;
 		break;
 	case Type::Input:
-		*Parent->Pointer = InputByte();
+		*Parent->DataPointer = InputByte();
 		break;
 	case Type::Output:
-		OutputByte(*Parent->Pointer);
+		OutputByte(*Parent->DataPointer);
 		break;
 	case Type::LoopStart:
-		if (*Parent->Pointer == 0)
-			Parent->InstructionPointer = reinterpret_cast<Instruction*>(Data);
+		if (*Parent->DataPointer == 0)
+			Parent->InstructionPointer = Pointer;
 		break;
 	case Type::LoopEnd:
-		if (*Parent->Pointer != 0)
-			Parent->InstructionPointer = reinterpret_cast<Instruction*>(Data);
+		if (*Parent->DataPointer != 0)
+			Parent->InstructionPointer = Pointer;
 		break;
 	case Type::Store:
-		TemporaryValue = *Parent->Pointer;
+		TemporaryValue = *Parent->DataPointer;
 	case Type::Reset:
-		*Parent->Pointer = 0;
+		*Parent->DataPointer = 0;
 		break;
 	case Type::Multiplication:
 		AdvancePointer(SmallData[0]);
-		*Parent->Pointer += SmallData[1] * TemporaryValue;
+		*Parent->DataPointer += SmallData[1] * TemporaryValue;
 		break;
 	}
-}
-
-void Instruction::Modify(std::intptr_t x)
-{
-	Data += x;
-}
-
-void Instruction::Set(Instruction* x)
-{
-	Data = reinterpret_cast<std::intptr_t>(x);
-}
-
-std::pair<Instruction::Type, std::intptr_t> Instruction::Query() const
-{
-	return std::make_pair(Command, Data);
 }
 
 void Instruction::AdvancePointer(std::ptrdiff_t Offset)
@@ -77,7 +62,7 @@ void Instruction::AdvancePointer(std::ptrdiff_t Offset)
 	for (;Parent->Cells.Index > Parent->Cells.Limits.second; ++Parent->Cells.Limits.second)
 		Parent->Cells.Data.emplace_back(0);
 
-	std::advance(Parent->Pointer, Offset);
+	std::advance(Parent->DataPointer, Offset);
 }
 
 void Instruction::SetParent(ProgramData* Adopter)
@@ -106,13 +91,12 @@ ProgramData::ProgramData(const char* const Path)
 	{
 		if (Last == x)
 		{
-			Text.back().Modify(y);
+			Text.back().Data += y;
 
 			// Remove instructions that have no effect
-			if (!Text.back().Query().second)
+			if (!Text.back().Data)
 			{
 				Text.pop_back();
-
 				Last = Instruction::Type::Nop;
 			}
 		}
@@ -127,7 +111,7 @@ ProgramData::ProgramData(const char* const Path)
 	Text.reserve(Source.size());
 
 	Instruction::SetParent(this);
-	
+
 	for (auto Char : Source)
 	{
 		switch (Char)
@@ -155,14 +139,14 @@ ProgramData::ProgramData(const char* const Path)
 		case '[':
 			Text.emplace_back(Instruction::Type::LoopStart);
 			JumpTable.push(&Text.back());
-			
+
 			Last = Instruction::Type::LoopStart;
 			break;
 		case ']':
 			if (JumpTable.size() > 0)
 			{
 				// Remove empty loops
-				if (Text.back().Query().first == Instruction::Type::LoopStart)
+				if (Text.back().Command == Instruction::Type::LoopStart)
 				{
 					Text.pop_back();
 					JumpTable.pop();
@@ -172,9 +156,9 @@ ProgramData::ProgramData(const char* const Path)
 				}
 
 				// Try to detect a "[-]" and replace it with a Reset instruction
-				if (std::next(Text.rbegin())->Query().first == Instruction::Type::LoopStart)
+				if (std::next(Text.rbegin())->Command == Instruction::Type::LoopStart)
 				{
-					if (Text.back().Query().first == Instruction::Type::Addition)
+					if (Text.back().Command == Instruction::Type::Addition)
 					{
 						Text.pop_back();
 						Text.pop_back();
@@ -205,11 +189,11 @@ ProgramData::ProgramData(const char* const Path)
 					{
 						if (*Iterator == Instruction::Type::MovePointer)
 						{
-							CurrentOffset += Iterator->Query().second;
+							CurrentOffset += Iterator->Data;
 						}
 						else if (*Iterator == Instruction::Type::Addition)
 						{
-							Operations.emplace_back(CurrentOffset - LastOffset, Iterator->Query().second);
+							Operations.emplace_back(CurrentOffset - LastOffset, Iterator->Data);
 							LastOffset = CurrentOffset;
 						}
 					}
@@ -254,7 +238,7 @@ ProgramData::ProgramData(const char* const Path)
 				}
 
 				Text.emplace_back(Instruction::Type::LoopEnd, std::next(JumpTable.top()));
-				JumpTable.top()->Set(EndPointer);
+				JumpTable.top()->Pointer = EndPointer;
 				JumpTable.pop();
 
 				Last = Instruction::Type::LoopEnd;
@@ -285,13 +269,13 @@ ProgramData::~ProgramData()
 
 void ProgramData::Run()
 {
-	while (InstructionPointer->Query().first != Instruction::Type::Stop)
+	while (InstructionPointer->Command != Instruction::Type::Stop)
 		InstructionPointer++->Execute();
 }
 
-bool operator==(const Instruction& x, Instruction::Type y)
+bool Instruction::operator==(Type y) const
 {
-	return x.Query().first == y;
+	return Command == y;
 }
 
 bool operator==(Instruction::Type x, const Instruction& y)
