@@ -231,12 +231,10 @@ ProgramData::ProgramData(const char* const Path)
 								while (JumpTable.top() <= &Text.back())
 									Text.pop_back();
 								JumpTable.pop();
-								
+								Operations.erase(Cell0);
+
 								for (const auto& Operation : Operations)
-								{
-									if (Operation.first)
-										Text.emplace_back(Instruction::Type::Multiplication, Operation.first, Operation.second);
-								}
+									Text.emplace_back(Instruction::Type::Multiplication, Operation.first, Operation.second);
 								Text.emplace_back(Instruction::Type::Reset);
 								Last = Instruction::Type::Reset;
 
