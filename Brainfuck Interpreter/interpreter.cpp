@@ -49,7 +49,7 @@ void Instruction::Execute() const
 
 		AdvancePointer(SmallData[0]);
 		*Parent->Pointer += SmallData[1] * Value2;
-		std::advance(Parent->Pointer, -SmallData[0]);
+		AdvancePointer(-SmallData[0]);
 		break;
 	}
 }
