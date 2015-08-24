@@ -48,7 +48,8 @@ void Instruction::Execute() const
 		TemporaryValue = *Parent->Pointer;
 		break;
 	case Type::Multiplication:
-		*Parent->Pointer += Data * TemporaryValue;
+		AdvancePointer(SmallData[0]);
+		*Parent->Pointer += SmallData[1] * TemporaryValue;
 		break;
 	}
 }
@@ -242,12 +243,9 @@ ProgramData::ProgramData(const char* const Path)
 								Text.emplace_back(Instruction::Type::Reset);
 
 								for (const auto& Operation : Operations)
-								{
-									Text.emplace_back(Instruction::Type::MovePointer, Operation.first);
-									Text.emplace_back(Instruction::Type::Multiplication, Operation.second);
-								}
+									Text.emplace_back(Instruction::Type::Multiplication, Operation.first, Operation.second);
 
-								Text.emplace_back(Instruction::Type::MovePointer, -std::accumulate(Operations.cbegin(), Operations.cend(), 0,
+								Text.emplace_back(Instruction::Type::MovePointer, -std::accumulate(std::cbegin(Operations), std::cend(Operations), 0,
 									[](intptr_t x, std::pair<std::intptr_t, std::intptr_t> y) { return x + y.first; }));
 								Last = Instruction::Type::MovePointer;
 
