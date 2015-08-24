@@ -34,7 +34,7 @@ public:
 class Instruction
 {
 public:
-	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Stop };
+	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Store, Stop };
 
 	explicit Instruction(Type, std::intptr_t = 0);
 	Instruction(Type, Instruction*);
@@ -57,7 +57,9 @@ private:
 		std::intptr_t Data;
 		std::int32_t SmallData[2];
 	};
+
 	static ProgramData* Parent;
+	static std::intptr_t TemporaryValue;
 };
 
 inline bool operator==(const Instruction& x, Instruction::Type y);

@@ -14,6 +14,7 @@ Instruction::Instruction(Type x, Instruction* y) : Command(x), Data(reinterpret_
 Instruction::Instruction(Type x, std::int32_t y, std::int32_t z) : Command(x), SmallData{ y, z } { }
 
 ProgramData* Instruction::Parent = nullptr;
+std::intptr_t Instruction::TemporaryValue = 0;
 
 void Instruction::Execute() const
 {
@@ -41,6 +42,9 @@ void Instruction::Execute() const
 		break;
 	case Type::Reset:
 		*Parent->Pointer = 0;
+		break;
+	case Type::Store:
+		TemporaryValue = *Parent->Pointer;
 		break;
 	case Type::Multiplication:
 		// The first half of the Value contains
