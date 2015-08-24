@@ -6,6 +6,7 @@
 #include <string>
 #include <stack>
 #include <algorithm>
+#include <numeric>
 
 Instruction::Instruction(Type x, std::intptr_t y) : Command(x), Data(y) { }
 
@@ -47,13 +48,7 @@ void Instruction::Execute() const
 		TemporaryValue = *Parent->Pointer;
 		break;
 	case Type::Multiplication:
-		// The first half of the Value contains
-		// the offset and the second the multiplication value
-		auto Value2 = *Parent->Pointer;
-
-		AdvancePointer(SmallData[0]);
-		*Parent->Pointer += SmallData[1] * Value2;
-		AdvancePointer(-SmallData[0]);
+		*Parent->Pointer += Data * TemporaryValue;
 		break;
 	}
 }
@@ -201,23 +196,29 @@ ProgramData::ProgramData(const char* const Path)
 				if (std::all_of(std::next(JumpTable.top()), EndPointer, [](const Instruction& x)
 				{ return x == Instruction::Type::Addition || x == Instruction::Type::MovePointer; }))
 				{
-					std::intptr_t Offset = 0;
+					std::intptr_t CurrentOffset = 0;
+					std::intptr_t LastOffset = 0;
 					// Offset, Value
 					std::list<std::pair<std::intptr_t, std::intptr_t>> Operations;
 
 					for (auto Iterator = std::next(JumpTable.top()); Iterator != EndPointer; ++Iterator)
 					{
 						if (*Iterator == Instruction::Type::MovePointer)
-							Offset += Iterator->Query().second;
+						{
+							CurrentOffset += Iterator->Query().second;
+						}
 						else if (*Iterator == Instruction::Type::Addition)
-							Operations.emplace_back(Offset, Iterator->Query().second);
+						{
+							Operations.emplace_back(CurrentOffset - LastOffset, Iterator->Query().second);
+							LastOffset = CurrentOffset;
+						}
 					}
 
 					/*
 					*	Make sure the Pointer ends up were it started
 					*	and only 1 was subtracted from Cell #0
 					*/
-					if (Offset == 0)
+					if (CurrentOffset == 0)
 					{
 						if (std::count_if(std::cbegin(Operations), std::cend(Operations), [](std::pair<std::intptr_t, std::intptr_t> x)
 						{ return x.first == 0; }) == 1)
@@ -237,10 +238,18 @@ ProgramData::ProgramData(const char* const Path)
 								JumpTable.pop();
 								Operations.erase(Cell0);
 
-								for (const auto& Operation : Operations)
-									Text.emplace_back(Instruction::Type::Multiplication, Operation.first, Operation.second);
+								Text.emplace_back(Instruction::Type::Store);
 								Text.emplace_back(Instruction::Type::Reset);
-								Last = Instruction::Type::Reset;
+
+								for (const auto& Operation : Operations)
+								{
+									Text.emplace_back(Instruction::Type::MovePointer, Operation.first);
+									Text.emplace_back(Instruction::Type::Multiplication, Operation.second);
+								}
+
+								Text.emplace_back(Instruction::Type::MovePointer, -std::accumulate(Operations.cbegin(), Operations.cend(), 0,
+									[](intptr_t x, std::pair<std::intptr_t, std::intptr_t> y) { return x + y.first; }));
+								Last = Instruction::Type::MovePointer;
 
 								break;
 							}
