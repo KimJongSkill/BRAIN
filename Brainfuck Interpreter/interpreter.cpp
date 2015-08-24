@@ -302,4 +302,3 @@ bool operator!=(Instruction::Type x, const Instruction& y)
 {
 	return y != x;
 }
-
