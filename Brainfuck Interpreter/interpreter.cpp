@@ -41,11 +41,10 @@ void Instruction::Execute() const
 		if (*Parent->Pointer != 0)
 			Parent->InstructionPointer = reinterpret_cast<Instruction*>(Data);
 		break;
-	case Type::Reset:
-		*Parent->Pointer = 0;
-		break;
 	case Type::Store:
 		TemporaryValue = *Parent->Pointer;
+	case Type::Reset:
+		*Parent->Pointer = 0;
 		break;
 	case Type::Multiplication:
 		AdvancePointer(SmallData[0]);
@@ -240,7 +239,6 @@ ProgramData::ProgramData(const char* const Path)
 								Operations.erase(Cell0);
 
 								Text.emplace_back(Instruction::Type::Store);
-								Text.emplace_back(Instruction::Type::Reset);
 
 								for (const auto& Operation : Operations)
 									Text.emplace_back(Instruction::Type::Multiplication, Operation.first, Operation.second);
