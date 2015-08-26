@@ -14,7 +14,7 @@ std::uint8_t InputByte()
 	return std::cin.get();
 }
 
-std::string Open(const char* const Path)
+std::string Open(const std::string& Path)
 {
 	std::stringstream Stream;
 	std::ifstream File;

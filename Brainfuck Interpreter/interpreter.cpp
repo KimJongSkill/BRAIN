@@ -81,9 +81,8 @@ void Instruction::Orphan(ProgramData* Adopter)
 		Parent = nullptr;
 }
 
-ProgramData::ProgramData(const char* const Path)
+ProgramData::ProgramData(const std::string& Source)
 {
-	std::string Source = Open(Path);
 	std::stack<Instruction*> JumpTable;
 	Instruction::Type Last = Instruction::Type::Nop;
 

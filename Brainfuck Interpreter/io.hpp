@@ -7,4 +7,4 @@ void OutputByte(const std::uint8_t);
 
 std::uint8_t InputByte();
 
-std::string Open(const char* const);
+std::string Open(const std::string&);

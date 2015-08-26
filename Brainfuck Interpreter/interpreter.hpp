@@ -24,7 +24,7 @@ class ProgramData
 	Memory::iterator DataPointer = Cells.Data.begin();
 
 public:
-	explicit ProgramData(const char* const Path);
+	explicit ProgramData(const std::string& Source);
 	~ProgramData();
 
 	void Run();
