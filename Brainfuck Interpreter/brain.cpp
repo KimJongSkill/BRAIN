@@ -45,21 +45,18 @@ std::string ParseArguments(std::unordered_map<std::string, bool>& Options, int C
 int main(int argc, const char* argv[])
 {
 	std::string Source;
-	bool Time = false;
 
-	std::unordered_map<std::string, bool> Expected;
-	Expected["-t"] = false;
-	Expected["--time"] = false;
-	Expected["-e"] = false;
-	Expected["--execute"] = false;
+	std::unordered_map<std::string, bool> Options;
+	Options["-t"] = false;
+	Options["--time"] = false;
+	Options["-e"] = false;
+	Options["--execute"] = false;
 
 	try
 	{
-		std::string Other = ParseArguments(Expected, argc, argv);
+		std::string Other = ParseArguments(Options, argc, argv);
 
-		if (Expected["-t"] || Expected["--time"])
-			Time = true;
-		if (Expected["-e"] || Expected["--execute"])
+		if (Options["-e"] || Options["--execute"])
 			Source = std::move(Other);
 		else
 			Source = Open(Other);
@@ -67,13 +64,13 @@ int main(int argc, const char* argv[])
 		std::cout.rdbuf()->pubsetbuf(Buffer, sizeof(Buffer));
 
 		std::chrono::steady_clock::time_point Start;
-		if (Time)
+		if (Options["-t"] || Options["--time"])
 			Start = std::chrono::steady_clock::now();
 
 		ProgramData Program(Source);
 		Program.Run();
 
-		if (Time)
+		if (Options["-t"] || Options["--time"])
 			std::cout << "\nProgram execution finished in "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - Start).count()
 			<< " ms\n";
