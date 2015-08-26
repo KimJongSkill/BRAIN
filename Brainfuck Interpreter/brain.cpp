@@ -10,7 +10,7 @@
 
 static char Buffer[1024];
 
-void ShowUsage(std::string Name)
+static void ShowUsage(std::string Name)
 {
 	std::string Executable(Name, Name.find_last_of("/\\") + 1);
 
