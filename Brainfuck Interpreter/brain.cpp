@@ -10,13 +10,19 @@
 
 static char Buffer[1024];
 
-void ShowUsage()
+void ShowUsage(std::string Name)
 {
+	std::string Executable(Name, Name.find_last_of("/\\") + 1);
+
 	std::cout <<
-		"BRAIN - Brainfuck Interpreter\n\n"
-		"BRAIN [-t, --time] [-e, --execute] source|file\n\n"
-		"\t-t, --time\tDisplay execution time\n"
-		"\t-e, --execute\tExecute 'source' instead of opening 'file'\n";
+		"BRAIN - Brainfuck Interpreter\n"
+		"\n"
+		"Usage:\n"
+		"	" << Executable << " [-t] [-e] (source | file)\n"
+		"\n"
+		"Options:\n"
+		"	-t, --time	Display execution time\n"
+		"	-e, --execute	Execute 'source' instead of opening 'file'\n";
 }
 
 std::string ParseArguments(std::unordered_map<std::string, bool>& Options, int Count, const char* Arguments[])
@@ -77,7 +83,7 @@ int main(int argc, const char* argv[])
 	}
 	catch (const std::out_of_range&)
 	{
-		ShowUsage();
+		ShowUsage(argv[0]);
 
 		return EXIT_FAILURE;
 	}
