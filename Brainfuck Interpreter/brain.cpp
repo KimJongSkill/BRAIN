@@ -19,8 +19,10 @@ static void ShowUsage(std::string Name)
 		"\n"
 		"Usage:\n"
 		"	" << Executable << " [-t] [-e] (source | file)\n"
+		"	" << Executable << " [-h]\n"
 		"\n"
 		"Options:\n"
+		"	-h, --help	Display this message\n"
 		"	-t, --time	Display execution time\n"
 		"	-e, --execute	Execute 'source' instead of opening 'file'\n";
 }
@@ -57,10 +59,19 @@ int main(int argc, const char* argv[])
 	Options["--time"] = false;
 	Options["-e"] = false;
 	Options["--execute"] = false;
+	Options["-h"] = false;
+	Options["--help"] = false;
 
 	try
 	{
 		std::string Other = ParseArguments(Options, argc, argv);
+
+		if (Options["-h"] || Options["--help"] || Other.empty())
+		{
+			ShowUsage(argv[0]);
+
+			return EXIT_SUCCESS;
+		}
 
 		if (Options["-e"] || Options["--execute"])
 			Source = std::move(Other);
