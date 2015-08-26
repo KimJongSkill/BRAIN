@@ -10,14 +10,13 @@
 
 static char Buffer[1024];
 
-void Usage()
+void ShowUsage()
 {
-	std::cout << "BRAIN: Brainfuck Interpreter\n\n";
-	std::cout << "BRAIN [-t/--time] [-e/--execute source] [file]\n\n";
-	std::cout << "\t-t/--time\tDisplay execution time and instruction count\n";
-	std::cout << "\t-e/--execute\tExecute source string instead of opening a file\n";
-	std::cout << "\tsource\t\tSpecifies the string containing the Brainfuck source to execute\n";
-	std::cout << "\tfile\t\tSpecifies the Brainfuck source file to execute\n";
+	std::cout <<
+		"BRAIN - Brainfuck Interpreter\n\n"
+		"BRAIN [-t, --time] [-e, --execute] source|file\n\n"
+		"\t-t, --time\tDisplay execution time\n"
+		"\t-e, --execute\tExecute 'source' instead of opening 'file'\n";
 }
 
 std::string ParseArguments(std::unordered_map<std::string, bool>& Options, int Count, const char* Arguments[])
@@ -81,7 +80,7 @@ int main(int argc, const char* argv[])
 	}
 	catch (const std::out_of_range&)
 	{
-		Usage();
+		ShowUsage();
 
 		return EXIT_FAILURE;
 	}
