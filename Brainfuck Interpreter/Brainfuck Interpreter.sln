@@ -18,8 +18,8 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{60B70087-A2C7-463A-9D69-675C052DE180}.Debug|x64.ActiveCfg = Release|x64
-		{60B70087-A2C7-463A-9D69-675C052DE180}.Debug|x64.Build.0 = Release|x64
+		{60B70087-A2C7-463A-9D69-675C052DE180}.Debug|x64.ActiveCfg = Debug|x64
+		{60B70087-A2C7-463A-9D69-675C052DE180}.Debug|x64.Build.0 = Debug|x64
 		{60B70087-A2C7-463A-9D69-675C052DE180}.Debug|x86.ActiveCfg = Release|x64
 		{60B70087-A2C7-463A-9D69-675C052DE180}.Debug|x86.Build.0 = Release|x64
 		{60B70087-A2C7-463A-9D69-675C052DE180}.Release|x64.ActiveCfg = Release|x64
@@ -27,8 +27,8 @@ Global
 		{60B70087-A2C7-463A-9D69-675C052DE180}.Release|x64.Deploy.0 = Release|x64
 		{60B70087-A2C7-463A-9D69-675C052DE180}.Release|x86.ActiveCfg = Release|x64
 		{60B70087-A2C7-463A-9D69-675C052DE180}.Release|x86.Build.0 = Release|x64
-		{C3D3E9FF-7949-44B9-ABE5-3B4C9ACAC0A9}.Debug|x64.ActiveCfg = Release|x64
-		{C3D3E9FF-7949-44B9-ABE5-3B4C9ACAC0A9}.Debug|x64.Build.0 = Release|x64
+		{C3D3E9FF-7949-44B9-ABE5-3B4C9ACAC0A9}.Debug|x64.ActiveCfg = Debug|x64
+		{C3D3E9FF-7949-44B9-ABE5-3B4C9ACAC0A9}.Debug|x64.Build.0 = Debug|x64
 		{C3D3E9FF-7949-44B9-ABE5-3B4C9ACAC0A9}.Debug|x86.ActiveCfg = Release|x64
 		{C3D3E9FF-7949-44B9-ABE5-3B4C9ACAC0A9}.Debug|x86.Build.0 = Release|x64
 		{C3D3E9FF-7949-44B9-ABE5-3B4C9ACAC0A9}.Release|x64.ActiveCfg = Release|x64
