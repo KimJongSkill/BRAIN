@@ -8,8 +8,9 @@
 #include <cstring>
 #include <unordered_map>
 #include <vector>
+#include <array>
 
-static char Buffer[1024];
+static std::array<char, 1024> Buffer;
 
 const std::string Documentation =
 R"(BRAIN - Brainfuck Interpreter
@@ -42,7 +43,7 @@ int main(int argc, const char* argv[])
 	else
 		Source = Open(Arguments["FILE"].asString());
 
-	std::cout.rdbuf()->pubsetbuf(Buffer, sizeof(Buffer));
+	std::cout.rdbuf()->pubsetbuf(Buffer.data(), std::size(Buffer));
 
 	std::chrono::steady_clock::time_point Start;
 	if (Arguments["--time"].asBool())
