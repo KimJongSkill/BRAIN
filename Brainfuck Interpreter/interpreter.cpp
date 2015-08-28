@@ -50,6 +50,10 @@ void Instruction::Execute() const
 		AdvancePointer(SmallData[0]);
 		*Parent->DataPointer += SmallData[1] * TemporaryValue;
 		break;
+	case Type::Seek:
+		while (*Parent->DataPointer)
+			AdvancePointer(Data);
+		break;
 	}
 }
 
@@ -154,7 +158,10 @@ ProgramData::ProgramData(const std::string& Source)
 					break;
 				}
 
-				// Try to detect a "[-]" and replace it with a Reset instruction
+				/* 
+				*	Try to detect a "[-]" and replace it with a Reset instruction
+				*	or a "[<]"/"[>]" and replace it with a Seek instruction
+				*/
 				if (std::next(Text.rbegin())->Command == Instruction::Type::LoopStart)
 				{
 					if (Text.back().Command == Instruction::Type::Addition)
@@ -165,6 +172,18 @@ ProgramData::ProgramData(const std::string& Source)
 
 						Text.emplace_back(Instruction::Type::Reset);
 						Last = Instruction::Type::Reset;
+						break;
+					}
+					else if (Text.back().Command == Instruction::Type::MovePointer)
+					{
+						auto Data = Text.back().Data;
+
+						Text.pop_back();
+						Text.pop_back();
+						JumpTable.pop();
+
+						Text.emplace_back(Instruction::Type::Seek, Data);
+						Last = Instruction::Type::Seek;
 						break;
 					}
 				}
