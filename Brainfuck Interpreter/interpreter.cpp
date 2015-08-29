@@ -17,12 +17,15 @@ Instruction::Instruction(Type x, std::int32_t y, std::int32_t z) : Command(x), S
 ProgramData* Instruction::Parent = nullptr;
 std::intptr_t Instruction::TemporaryValue = 0;
 
+Memory::Front_tag Memory::Front{};
+Memory::Back_tag Memory::Back{};
+
 void Instruction::Execute() const
 {
 	switch (Command)
 	{
 	case Type::MovePointer:
-		AdvancePointer(Data);
+		std::advance(Parent->DataPointer, Data);
 		break;
 	case Type::Addition:
 		*Parent->DataPointer += Data;
@@ -47,26 +50,14 @@ void Instruction::Execute() const
 		*Parent->DataPointer = 0;
 		break;
 	case Type::Multiplication:
-		AdvancePointer(SmallData[0]);
+		std::advance(Parent->DataPointer, SmallData[0]);
 		*Parent->DataPointer += SmallData[1] * TemporaryValue;
 		break;
 	case Type::Seek:
 		while (*Parent->DataPointer)
-			AdvancePointer(Data);
+			std::advance(Parent->DataPointer, Data);
 		break;
 	}
-}
-
-void Instruction::AdvancePointer(std::ptrdiff_t Offset)
-{
-	Parent->Cells.Index += Offset;
-
-	for (;Parent->Cells.Index < Parent->Cells.Limits.first; --Parent->Cells.Limits.first)
-		Parent->Cells.Data.emplace_front(0);
-	for (;Parent->Cells.Index > Parent->Cells.Limits.second; ++Parent->Cells.Limits.second)
-		Parent->Cells.Data.emplace_back(0);
-
-	std::advance(Parent->DataPointer, Offset);
 }
 
 void Instruction::SetParent(ProgramData* Adopter)
@@ -308,4 +299,171 @@ bool operator!=(const Instruction& x, Instruction::Type y)
 bool operator!=(Instruction::Type x, const Instruction& y)
 {
 	return y != x;
+}
+
+bool Memory_iterator::operator==(const Memory_iterator& Other) const
+{
+	return Pointer == Other.Pointer;
+}
+
+bool Memory_iterator::operator!=(const Memory_iterator& Other) const
+{
+	return !(*this == Other);
+}
+
+auto Memory_iterator::operator*() const -> reference
+{
+	return *Pointer;
+}
+
+auto Memory_iterator::operator->() const -> pointer
+{
+	return Pointer;
+}
+
+Memory_iterator& Memory_iterator::operator++()
+{
+	Advance(*this, 1);
+
+	return *this;
+}
+
+Memory_iterator& Memory_iterator::operator++(int)
+{
+	auto Temp = *this;
+	++*this;
+	return Temp;
+}
+
+Memory_iterator& Memory_iterator::operator--()
+{
+	Advance(*this, -1);
+
+	return *this;
+}
+
+Memory_iterator& Memory_iterator::operator--(int)
+{
+	auto Temp = *this;
+	--*this;
+	return Temp;
+}
+
+auto Memory_iterator::operator-(const Memory_iterator& Other) const -> difference_type
+{
+	return Index - Other.Index;
+}
+
+Memory_iterator Memory_iterator::operator+(difference_type Delta) const
+{
+	Memory_iterator New(*this);
+
+	Advance(New, Delta);
+
+	return New;
+}
+
+Memory_iterator Memory_iterator::operator-(difference_type Delta) const
+{
+	return *this + -Delta;
+}
+
+bool Memory_iterator::operator<(const Memory_iterator& Other) const
+{
+	return Index < Other.Index;
+}
+
+bool Memory_iterator::operator>(const Memory_iterator& Other) const
+{
+	return Index > Other.Index;
+}
+
+bool Memory_iterator::operator<=(const Memory_iterator& Other) const
+{
+	return Index <= Other.Index;
+}
+
+bool Memory_iterator::operator>=(const Memory_iterator& Other) const
+{
+	return Index >= Other.Index;;
+}
+
+Memory_iterator& Memory_iterator::operator+=(difference_type Delta)
+{
+	Advance(*this, Delta);
+
+	return *this;
+}
+
+Memory_iterator & Memory_iterator::operator-=(difference_type Delta)
+{
+	return *this += -Delta;
+}
+
+auto Memory_iterator::operator[](difference_type Offset) const -> reference
+{
+	return *(*this + Offset);
+}
+
+void Memory_iterator::Advance(Memory_iterator& Target, std::ptrdiff_t Delta)
+{
+	std::ptrdiff_t NewIndex = Target.Index + Delta;
+
+	if (NewIndex > Target.Parent->Limits.second)
+		Target.Pointer = Target.Parent->RequestNewPage(Memory::Back);
+	else if (NewIndex < Target.Parent->Limits.first)
+		Target.Pointer = Target.Parent->RequestNewPage(Memory::Front);
+	/*
+	*	Check if the iterator has moved to another page.
+	*	Each page can hold 256 elements, so the first byte
+	*	of the Index stores the index within a page and
+	*	the other bytes store the index of the page within
+	*	the list.
+	*/
+	else if (NewIndex >> 8 != Target.Index >> 8)
+		Target.Pointer = std::next(std::next(Target.Parent->Origin, NewIndex >> 8)->data(), NewIndex & 0xff);
+	else
+		Target.Pointer = Target.Pointer + Delta;
+
+	Target.Index = NewIndex;
+}
+
+auto Memory::begin() const -> iterator
+{
+	iterator New;
+	New.Index = Limits.first;
+	New.Parent = const_cast<Memory*>(this);
+	New.Pointer = const_cast<char*>(&Storage.front().front());
+
+	return New;
+}
+
+auto Memory::end() const -> iterator
+{
+	iterator New;
+	New.Index = Limits.second;
+	New.Parent = const_cast<Memory*>(this);
+	New.Pointer = const_cast<char*>(&Storage.back().back());
+
+	return New;
+}
+
+auto Memory::RequestNewPage(Front_tag) -> iterator::pointer
+{
+	Storage.emplace_front();
+	Storage.front().fill(0);
+
+	Limits.first -= Storage.front().size();
+
+	return &Storage.front().back();
+}
+
+auto Memory::RequestNewPage(Back_tag) -> iterator::pointer
+{
+	Storage.emplace_back();
+	Storage.back().fill(0);
+
+	Limits.second += Storage.back().size();
+
+	return &Storage.back().front();
 }
