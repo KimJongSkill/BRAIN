@@ -46,8 +46,11 @@ void Instruction::Execute() const
 		break;
 	case Type::Store:
 		TemporaryValue = *Parent->DataPointer;
-	case Type::Reset:
 		*Parent->DataPointer = 0;
+		break;
+	case Type::Reset:
+			std::fill(Parent->DataPointer, std::next(Parent->DataPointer, Data), 0);
+			std::advance(Parent->DataPointer, Data - 1);
 		break;
 	case Type::Multiplication:
 		std::advance(Parent->DataPointer, SmallData[0]);
@@ -151,10 +154,20 @@ ProgramData::ProgramData(const std::string& Source)
 						Text.pop_back();
 						JumpTable.pop();
 
-						if (*std::prev(std::cend(Text)) == Instruction::Type::Reset)
-							break;
+						if (*std::prev(std::cend(Text)) == Instruction::Type::Reset);
+						// Detect "[-]>[-]..."
+						else if (*std::prev(std::cend(Text)) == Instruction::Type::MovePointer
+							&& std::abs(std::prev(std::cend(Text))->Data) == 1
+							&& *std::prev(std::cend(Text), 2) == Instruction::Type::Reset)
+						{
+							std::prev(std::end(Text), 2)->Data += std::prev(std::end(Text))->Data;
+							Text.pop_back();
+						}
+						else
+						{
+							Text.emplace_back(Instruction::Type::Reset, 1);
+						}
 
-						Text.emplace_back(Instruction::Type::Reset);
 						break;
 					}
 					else if (Text.back().Command == Instruction::Type::MovePointer)
