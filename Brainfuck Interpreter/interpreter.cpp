@@ -161,6 +161,9 @@ ProgramData::ProgramData(const std::string& Source)
 						Text.pop_back();
 						JumpTable.pop();
 
+						if (*std::prev(std::cend(Text)) == Instruction::Type::Reset)
+							break;
+
 						Text.emplace_back(Instruction::Type::Reset);
 						Last = Instruction::Type::Reset;
 						break;
