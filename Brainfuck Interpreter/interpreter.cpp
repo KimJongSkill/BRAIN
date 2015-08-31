@@ -79,25 +79,20 @@ void Instruction::Orphan(ProgramData* Adopter)
 ProgramData::ProgramData(const std::string& Source)
 {
 	std::stack<Instruction*> JumpTable;
-	Instruction::Type Last = Instruction::Type::Nop;
 
 	auto Lambda = [&](Instruction::Type x, std::intptr_t y)
 	{
-		if (Last == x)
+		if (Text.back() == x)
 		{
 			Text.back().Data += y;
 
 			// Remove instructions that have no effect
 			if (!Text.back().Data)
-			{
 				Text.pop_back();
-				Last = Instruction::Type::Nop;
-			}
 		}
 		else
 		{
 			Text.emplace_back(x, y);
-			Last = x;
 		}
 	};
 
@@ -124,17 +119,13 @@ ProgramData::ProgramData(const std::string& Source)
 			break;
 		case '.':
 			Text.emplace_back(Instruction::Type::Output);
-			Last = Instruction::Type::Output;
 			break;
 		case ',':
 			Text.emplace_back(Instruction::Type::Input);
-			Last = Instruction::Type::Input;
 			break;
 		case '[':
 			Text.emplace_back(Instruction::Type::LoopStart);
 			JumpTable.push(&Text.back());
-
-			Last = Instruction::Type::LoopStart;
 			break;
 		case ']':
 			if (JumpTable.size() > 0)
@@ -145,7 +136,6 @@ ProgramData::ProgramData(const std::string& Source)
 					Text.pop_back();
 					JumpTable.pop();
 
-					Last = Instruction::Type::Nop;
 					break;
 				}
 
@@ -165,7 +155,6 @@ ProgramData::ProgramData(const std::string& Source)
 							break;
 
 						Text.emplace_back(Instruction::Type::Reset);
-						Last = Instruction::Type::Reset;
 						break;
 					}
 					else if (Text.back().Command == Instruction::Type::MovePointer)
@@ -177,7 +166,6 @@ ProgramData::ProgramData(const std::string& Source)
 						JumpTable.pop();
 
 						Text.emplace_back(Instruction::Type::Seek, Data);
-						Last = Instruction::Type::Seek;
 						break;
 					}
 				}
@@ -241,7 +229,6 @@ ProgramData::ProgramData(const std::string& Source)
 
 								Text.emplace_back(Instruction::Type::MovePointer, -std::accumulate(std::cbegin(Operations), std::cend(Operations), 0,
 									[](intptr_t x, std::pair<std::intptr_t, std::intptr_t> y) { return x + y.first; }));
-								Last = Instruction::Type::MovePointer;
 
 								break;
 							}
@@ -252,8 +239,6 @@ ProgramData::ProgramData(const std::string& Source)
 				Text.emplace_back(Instruction::Type::LoopEnd, std::next(JumpTable.top()));
 				JumpTable.top()->Pointer = EndPointer;
 				JumpTable.pop();
-
-				Last = Instruction::Type::LoopEnd;
 			}
 			else
 			{
