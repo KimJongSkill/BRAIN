@@ -49,8 +49,8 @@ void Instruction::Execute() const
 		*Parent->DataPointer = 0;
 		break;
 	case Type::Reset:
-			std::fill(Parent->DataPointer, std::next(Parent->DataPointer, Data), 0);
-			std::advance(Parent->DataPointer, Data - 1);
+		std::fill_n(Parent->DataPointer, Data, 0);
+		std::advance(Parent->DataPointer, Data - 1);
 		break;
 	case Type::Multiplication:
 		std::advance(Parent->DataPointer, SmallData[0]);
