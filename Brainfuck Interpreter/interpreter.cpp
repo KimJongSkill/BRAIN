@@ -49,8 +49,8 @@ void Instruction::Execute() const
 		*Parent->DataPointer = 0;
 		break;
 	case Type::Reset:
-		std::fill_n(Parent->DataPointer, Data, 0);
-		std::advance(Parent->DataPointer, Data - 1);
+		std::fill_n(Parent->DataPointer, SmallData[0], 0);
+		std::advance(Parent->DataPointer, SmallData[1]);
 		break;
 	case Type::Multiplication:
 		std::advance(Parent->DataPointer, SmallData[0]);
@@ -160,12 +160,13 @@ ProgramData::ProgramData(const std::string& Source)
 							&& std::abs(std::prev(std::cend(Text))->Data) == 1
 							&& *std::prev(std::cend(Text), 2) == Instruction::Type::Reset)
 						{
-							std::prev(std::end(Text), 2)->Data += std::prev(std::end(Text))->Data;
+							std::prev(std::end(Text), 2)->SmallData[0] += std::prev(std::end(Text))->SmallData[0];
+							std::prev(std::end(Text), 2)->SmallData[1] += std::prev(std::cend(Text))->Data;
 							Text.pop_back();
 						}
 						else
 						{
-							Text.emplace_back(Instruction::Type::Reset, 1);
+							Text.emplace_back(Instruction::Type::Reset, 1, 0);
 						}
 
 						break;
