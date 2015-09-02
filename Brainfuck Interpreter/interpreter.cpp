@@ -86,11 +86,11 @@ ProgramData::ProgramData(const std::string& Source)
 {
 	std::stack<Instruction*> JumpTable;
 
-	auto Lambda = [&](Instruction::Type x, std::intptr_t y)
+	auto MovePointerLambda = [&](std::intptr_t x)
 	{
-		if (Text.back() == x)
+		if (Text.back() == Instruction::Type::MovePointer)
 		{
-			Text.back().Data += y;
+			Text.back().Data += x;
 
 			// Remove instructions that have no effect
 			if (!Text.back().Data)
@@ -98,7 +98,23 @@ ProgramData::ProgramData(const std::string& Source)
 		}
 		else
 		{
-			Text.emplace_back(x, y);
+			Text.emplace_back(Instruction::Type::MovePointer, x);
+		}
+	};
+
+	auto AdditionLambda = [&](std::intptr_t x)
+	{
+		if (Text.back() == Instruction::Type::Addition)
+		{
+			Text.back().Data += x;
+
+			// Remove instructions that have no effect
+			if (!Text.back().Data)
+				Text.pop_back();
+		}
+		else
+		{
+			Text.emplace_back(Instruction::Type::Addition, x);
 		}
 	};
 
@@ -114,16 +130,16 @@ ProgramData::ProgramData(const std::string& Source)
 		switch (Char)
 		{
 		case '>':
-			Lambda(Instruction::Type::MovePointer, 1);
+			MovePointerLambda(1);
 			break;
 		case '<':
-			Lambda(Instruction::Type::MovePointer, -1);
+			MovePointerLambda(-1);
 			break;
 		case '+':
-			Lambda(Instruction::Type::Addition, 1);
+			AdditionLambda(1);
 			break;
 		case '-':
-			Lambda(Instruction::Type::Addition, -1);
+			AdditionLambda(-1);
 			break;
 		case '.':
 			Text.emplace_back(Instruction::Type::Output);
