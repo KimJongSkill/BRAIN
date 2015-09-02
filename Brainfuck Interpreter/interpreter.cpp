@@ -156,7 +156,7 @@ ProgramData::ProgramData(const std::string& Source)
 						Text.pop_back();
 						JumpTable.pop();
 
-						if (Text.back() == Instruction::Type::Reset);
+						if (Text.back() == Instruction::Type::Reset && !Text.back().SmallData[1]);
 						// Detect "[-]>[-]..."
 						else if (Text.back() == Instruction::Type::MovePointer
 							&& *std::prev(std::cend(Text), 2) == Instruction::Type::Reset)
