@@ -101,6 +101,8 @@ ProgramData::ProgramData(const std::string& Source)
 
 	// Dirty way to make sure our pointers don't get invalidated later on
 	Text.reserve(Source.size());
+	// Allows us to call std::vector::back
+	Text.emplace_back(Instruction::Type::Nop);
 
 	Instruction::SetParent(this);
 
