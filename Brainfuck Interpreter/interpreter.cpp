@@ -8,14 +8,12 @@
 #include <algorithm>
 #include <numeric>
 
-Instruction::Instruction(Type x, std::intptr_t y) : Command(x), Data(y) { }
-
 Instruction::Instruction(Type x, Instruction* y) : Command(x), Pointer(y) { }
 
-Instruction::Instruction(Type x, std::int32_t y, std::int32_t z) : Command(x), SmallData{ y, z } { }
+Instruction::Instruction(Type x, value_type y, value_type z) : Command(x), Data{ y, z } { }
 
 ProgramData* Instruction::Parent = nullptr;
-std::intptr_t Instruction::TemporaryValue = 0;
+Instruction::value_type Instruction::TemporaryValue = 0;
 
 Memory::Front_tag Memory::Front{};
 Memory::Back_tag Memory::Back{};
@@ -25,10 +23,10 @@ void Instruction::Execute() const
 	switch (Command)
 	{
 	case Type::MovePointer:
-		std::advance(Parent->DataPointer, Data);
+		std::advance(Parent->DataPointer, *Data);
 		break;
 	case Type::Addition:
-		*Parent->DataPointer += Data;
+		*Parent->DataPointer += *Data;
 		break;
 	case Type::Input:
 		*Parent->DataPointer = InputByte();
@@ -49,19 +47,19 @@ void Instruction::Execute() const
 		*Parent->DataPointer = 0;
 		break;
 	case Type::Reset:
-		std::fill_n(Parent->DataPointer, SmallData[0], 0);
-		std::advance(Parent->DataPointer, SmallData[1]);
+		std::fill_n(Parent->DataPointer, Data[0], 0);
+		std::advance(Parent->DataPointer, Data[1]);
 		break;
 	case Type::Multiplication:
-		std::advance(Parent->DataPointer, SmallData[0]);
-		*Parent->DataPointer += SmallData[1] * TemporaryValue;
+		std::advance(Parent->DataPointer, Data[0]);
+		*Parent->DataPointer += Data[1] * TemporaryValue;
 		break;
 	case Type::Seek:
 		while (*Parent->DataPointer)
-			std::advance(Parent->DataPointer, Data);
+			std::advance(Parent->DataPointer, *Data);
 		break;
 	case Type::Set:
-		*Parent->DataPointer = Data;
+		*Parent->DataPointer = *Data;
 		break;
 	}
 }
@@ -86,14 +84,14 @@ ProgramData::ProgramData(const std::string& Source)
 {
 	std::stack<Instruction*> JumpTable;
 
-	auto MovePointerLambda = [&](std::intptr_t x)
+	auto MovePointerLambda = [&](Instruction::value_type x)
 	{
 		if (Text.back() == Instruction::Type::MovePointer)
 		{
-			Text.back().Data += x;
+			*Text.back().Data += x;
 
 			// Remove instructions that have no effect
-			if (!Text.back().Data)
+			if (!*Text.back().Data)
 				Text.pop_back();
 		}
 		else
@@ -102,19 +100,19 @@ ProgramData::ProgramData(const std::string& Source)
 		}
 	};
 
-	auto AdditionLambda = [&](std::intptr_t x)
+	auto AdditionLambda = [&](Instruction::value_type x)
 	{
 		if (Text.back() == Instruction::Type::Addition)
 		{
-			Text.back().Data += x;
+			*Text.back().Data += x;
 
 			// Remove instructions that have no effect
 			if (!Text.back().Data)
 				Text.pop_back();
 		}
 		else if (Text.back() == Instruction::Type::Reset
-			&& Text.back().SmallData[0] == 1
-			&& Text.back().SmallData[1] == 0)
+			&& Text.back().Data[0] == 1
+			&& Text.back().Data[1] == 0)
 		{
 			Text.pop_back();
 
@@ -122,7 +120,7 @@ ProgramData::ProgramData(const std::string& Source)
 		}
 		else if (Text.back() == Instruction::Type::Set)
 		{
-			Text.back().Data += x;
+			*Text.back().Data += x;
 		}
 		else
 		{
@@ -187,7 +185,7 @@ ProgramData::ProgramData(const std::string& Source)
 						Text.pop_back();
 						JumpTable.pop();
 
-						if (Text.back() == Instruction::Type::Reset && !Text.back().SmallData[1]);
+						if (Text.back() == Instruction::Type::Reset && !Text.back().Data[1]);
 						// Detect "[-]>[-]..."
 						else if (Text.back() == Instruction::Type::MovePointer
 							&& *std::prev(std::cend(Text), 2) == Instruction::Type::Reset)
@@ -197,12 +195,12 @@ ProgramData::ProgramData(const std::string& Source)
 							*	is clearing a range, allowing us to combine the instructions.
 							*	If not, we can always combine the MovePointer with the Reset instruction.
 							*/
-							std::ptrdiff_t MoveAmount = std::abs(Text.back().Data);
+							std::ptrdiff_t MoveAmount = std::abs(*Text.back().Data);
 
 							if (MoveAmount == 1)
-								std::prev(std::end(Text), 2)->SmallData[0] += Text.back().Data;
+								std::prev(std::end(Text), 2)->Data[0] += *Text.back().Data;
 
-							std::prev(std::end(Text), 2)->SmallData[1] += Text.back().Data;
+							std::prev(std::end(Text), 2)->Data[1] += *Text.back().Data;
 
 							Text.pop_back();
 							
@@ -218,7 +216,7 @@ ProgramData::ProgramData(const std::string& Source)
 					}
 					else if (Text.back().Command == Instruction::Type::MovePointer)
 					{
-						auto Data = Text.back().Data;
+						auto Data = *Text.back().Data;
 
 						Text.pop_back();
 						Text.pop_back();
@@ -239,20 +237,20 @@ ProgramData::ProgramData(const std::string& Source)
 				if (std::all_of(std::next(JumpTable.top()), EndPointer, [](const Instruction& x)
 				{ return x == Instruction::Type::Addition || x == Instruction::Type::MovePointer; }))
 				{
-					std::intptr_t CurrentOffset = 0;
-					std::intptr_t LastOffset = 0;
+					Instruction::value_type CurrentOffset = 0;
+					Instruction::value_type LastOffset = 0;
 					// Offset, Value
-					std::list<std::pair<std::intptr_t, std::intptr_t>> Operations;
+					std::list<std::pair<Instruction::value_type, Instruction::value_type>> Operations;
 
 					for (auto Iterator = std::next(JumpTable.top()); Iterator != EndPointer; ++Iterator)
 					{
 						if (*Iterator == Instruction::Type::MovePointer)
 						{
-							CurrentOffset += Iterator->Data;
+							CurrentOffset += *Iterator->Data;
 						}
 						else if (*Iterator == Instruction::Type::Addition)
 						{
-							Operations.emplace_back(CurrentOffset - LastOffset, Iterator->Data);
+							Operations.emplace_back(CurrentOffset - LastOffset, *Iterator->Data);
 							LastOffset = CurrentOffset;
 						}
 					}
@@ -287,7 +285,7 @@ ProgramData::ProgramData(const std::string& Source)
 									Text.emplace_back(Instruction::Type::Multiplication, Operation.first, Operation.second);
 
 								Text.emplace_back(Instruction::Type::MovePointer, -std::accumulate(std::cbegin(Operations), std::cend(Operations), 0,
-									[](intptr_t x, std::pair<std::intptr_t, std::intptr_t> y) { return x + y.first; }));
+									[](auto x, const std::pair<Instruction::value_type, Instruction::value_type>& y) { return x + y.first; }));
 
 								break;
 							}

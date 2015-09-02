@@ -91,10 +91,10 @@ class Instruction
 
 public:
 	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Store, Seek, Set, Stop };
+	typedef int value_type;
 
-	explicit Instruction(Type, std::intptr_t = 0);
 	Instruction(Type, Instruction*);
-	Instruction(Type, std::int32_t Offset, std::int32_t Value);
+	Instruction(Type, value_type = 0, value_type = 0);
 
 	void Execute() const;
 
@@ -107,13 +107,12 @@ private:
 	const Type Command;
 	union
 	{
-		std::intptr_t Data;
-		std::int32_t SmallData[2];
+		value_type Data[2];
 		Instruction* Pointer;
 	};
 
 	static ProgramData* Parent;
-	static std::intptr_t TemporaryValue;
+	static value_type TemporaryValue;
 };
 
 inline bool operator==(Instruction::Type x, const Instruction& y);
