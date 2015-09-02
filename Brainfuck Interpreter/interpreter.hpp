@@ -90,7 +90,7 @@ class Instruction
 	friend ProgramData;
 
 public:
-	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Store, Seek, Stop };
+	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Store, Seek, Set, Stop };
 
 	explicit Instruction(Type, std::intptr_t = 0);
 	Instruction(Type, Instruction*);

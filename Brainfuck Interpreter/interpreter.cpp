@@ -60,6 +60,9 @@ void Instruction::Execute() const
 		while (*Parent->DataPointer)
 			std::advance(Parent->DataPointer, Data);
 		break;
+	case Type::Set:
+		*Parent->DataPointer = Data;
+		break;
 	}
 }
 
