@@ -42,17 +42,25 @@ int main(int argc, const char* argv[])
 	std::cout.rdbuf()->pubsetbuf(Buffer.data(), std::size(Buffer));
 
 	std::chrono::steady_clock::time_point Start;
+	std::chrono::steady_clock::time_point ParsingComplete;
+	std::chrono::steady_clock::time_point ExecutionComplete;
 	if (Arguments["--time"].asBool())
 		Start = std::chrono::steady_clock::now();
 
 	try
 	{
 		ProgramData Program(Source);
+		ParsingComplete = std::chrono::steady_clock::now();
+
 		Program.Run();
+		ExecutionComplete = std::chrono::steady_clock::now();
 
 		if (Arguments["--time"].asBool())
-			std::cout << "\nProgram execution finished in "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - Start).count()
+			std::cout << "\nParsing finished in "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(ParsingComplete - Start).count()
+			<< " ms\n"
+			<< "Program execution finished in "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(ExecutionComplete - Start).count()
 			<< " ms\n";
 	}
 	catch (const std::exception& Exception)
