@@ -160,7 +160,7 @@ ProgramData::ProgramData(const std::string& Source)
 							&& std::abs(Text.back().Data) == 1
 							&& *std::prev(std::cend(Text), 2) == Instruction::Type::Reset)
 						{
-							std::prev(std::end(Text), 2)->SmallData[0] += Text.back().SmallData[0];
+							std::prev(std::end(Text), 2)->SmallData[0] += Text.back().Data;
 							std::prev(std::end(Text), 2)->SmallData[1] += Text.back().Data;
 							Text.pop_back();
 						}
