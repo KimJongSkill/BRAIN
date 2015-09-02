@@ -112,6 +112,18 @@ ProgramData::ProgramData(const std::string& Source)
 			if (!Text.back().Data)
 				Text.pop_back();
 		}
+		else if (Text.back() == Instruction::Type::Reset
+			&& Text.back().SmallData[0] == 1
+			&& Text.back().SmallData[1] == 0)
+		{
+			Text.pop_back();
+
+			Text.emplace_back(Instruction::Type::Set, x);
+		}
+		else if (Text.back() == Instruction::Type::Set)
+		{
+			Text.back().Data += x;
+		}
 		else
 		{
 			Text.emplace_back(Instruction::Type::Addition, x);
