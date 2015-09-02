@@ -90,7 +90,7 @@ class Instruction
 	friend ProgramData;
 
 public:
-	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Store, Seek, Set, Stop };
+	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Push, Pop, Seek, Set, Stop };
 	typedef int value_type;
 
 	Instruction(Type, Instruction*);
@@ -112,7 +112,7 @@ private:
 	};
 
 	static ProgramData* Parent;
-	static value_type TemporaryValue;
+	static std::vector<value_type> Storage;
 };
 
 inline bool operator==(Instruction::Type x, const Instruction& y);

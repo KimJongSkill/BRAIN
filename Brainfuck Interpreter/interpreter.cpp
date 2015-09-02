@@ -13,7 +13,7 @@ Instruction::Instruction(Type x, Instruction* y) : Command(x), Pointer(y) { }
 Instruction::Instruction(Type x, value_type y, value_type z) : Command(x), Data{ y, z } { }
 
 ProgramData* Instruction::Parent = nullptr;
-Instruction::value_type Instruction::TemporaryValue = 0;
+std::vector<Instruction::value_type> Instruction::Storage;
 
 Memory::Front_tag Memory::Front{};
 Memory::Back_tag Memory::Back{};
@@ -42,9 +42,12 @@ void Instruction::Execute() const
 		if (*Parent->DataPointer != 0)
 			Parent->InstructionPointer = Pointer;
 		break;
-	case Type::Store:
-		TemporaryValue = *Parent->DataPointer;
+	case Type::Push:
+		Storage.push_back(*Parent->DataPointer);
 		*Parent->DataPointer = 0;
+		break;
+	case Type::Pop:
+		Storage.pop_back();
 		break;
 	case Type::Reset:
 		std::fill_n(Parent->DataPointer, Data[0], 0);
@@ -52,7 +55,7 @@ void Instruction::Execute() const
 		break;
 	case Type::Multiplication:
 		std::advance(Parent->DataPointer, Data[0]);
-		*Parent->DataPointer += Data[1] * TemporaryValue;
+		*Parent->DataPointer += std::accumulate(std::cbegin(Storage), std::cend(Storage), Data[1], std::multiplies<value_type>());
 		break;
 	case Type::Seek:
 		while (*Parent->DataPointer)
@@ -279,10 +282,12 @@ ProgramData::ProgramData(const std::string& Source)
 								JumpTable.pop();
 								Operations.erase(Cell0);
 
-								Text.emplace_back(Instruction::Type::Store);
+								Text.emplace_back(Instruction::Type::Push);
 
 								for (const auto& Operation : Operations)
 									Text.emplace_back(Instruction::Type::Multiplication, Operation.first, Operation.second);
+
+								Text.emplace_back(Instruction::Type::Pop);
 
 								Text.emplace_back(Instruction::Type::MovePointer, -std::accumulate(std::cbegin(Operations), std::cend(Operations), 0,
 									[](auto x, const std::pair<Instruction::value_type, Instruction::value_type>& y) { return x + y.first; }));
