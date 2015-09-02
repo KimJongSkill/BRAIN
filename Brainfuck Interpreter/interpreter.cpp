@@ -159,12 +159,24 @@ ProgramData::ProgramData(const std::string& Source)
 						if (Text.back() == Instruction::Type::Reset);
 						// Detect "[-]>[-]..."
 						else if (Text.back() == Instruction::Type::MovePointer
-							&& std::abs(Text.back().Data) == 1
 							&& *std::prev(std::cend(Text), 2) == Instruction::Type::Reset)
 						{
-							std::prev(std::end(Text), 2)->SmallData[0] += Text.back().Data;
+							/*
+							*	If the pointer is only changed by 1 then the program
+							*	is clearing a range, allowing us to combine the instructions.
+							*	If not, we can always combine the MovePointer with the Reset instruction.
+							*/
+							std::ptrdiff_t MoveAmount = std::abs(Text.back().Data);
+
+							if (MoveAmount == 1)
+								std::prev(std::end(Text), 2)->SmallData[0] += Text.back().Data;
+
 							std::prev(std::end(Text), 2)->SmallData[1] += Text.back().Data;
+
 							Text.pop_back();
+							
+							if (MoveAmount != 1)
+								Text.emplace_back(Instruction::Type::Reset, 1, 0);
 						}
 						else
 						{
