@@ -154,14 +154,14 @@ ProgramData::ProgramData(const std::string& Source)
 						Text.pop_back();
 						JumpTable.pop();
 
-						if (*std::prev(std::cend(Text)) == Instruction::Type::Reset);
+						if (Text.back() == Instruction::Type::Reset);
 						// Detect "[-]>[-]..."
-						else if (*std::prev(std::cend(Text)) == Instruction::Type::MovePointer
-							&& std::abs(std::prev(std::cend(Text))->Data) == 1
+						else if (Text.back() == Instruction::Type::MovePointer
+							&& std::abs(Text.back().Data) == 1
 							&& *std::prev(std::cend(Text), 2) == Instruction::Type::Reset)
 						{
-							std::prev(std::end(Text), 2)->SmallData[0] += std::prev(std::end(Text))->SmallData[0];
-							std::prev(std::end(Text), 2)->SmallData[1] += std::prev(std::cend(Text))->Data;
+							std::prev(std::end(Text), 2)->SmallData[0] += Text.back().SmallData[0];
+							std::prev(std::end(Text), 2)->SmallData[1] += Text.back().Data;
 							Text.pop_back();
 						}
 						else
