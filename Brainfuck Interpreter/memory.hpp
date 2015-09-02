@@ -1,10 +1,8 @@
 #pragma once
 
-#include <vector>
+#include <iterator>
 #include <list>
 #include <array>
-#include <cstdint>
-#include <iterator>
 
 class Memory_iterator : public std::iterator<std::random_access_iterator_tag, char>
 {
@@ -68,53 +66,3 @@ private:
 	std::list<std::array<char, 256>>::iterator Origin = Storage.begin();
 	std::pair<std::ptrdiff_t, std::ptrdiff_t> Limits{ 0, 255 };
 };
-
-class ProgramData
-{
-	friend class Instruction;
-
-	std::vector<Instruction> Text;
-	std::vector<Instruction>::pointer InstructionPointer;
-	Memory Cells;
-	Memory::iterator DataPointer = std::begin(Cells);
-
-public:
-	explicit ProgramData(const std::string& Source);
-	~ProgramData();
-
-	void Run();
-};
-
-class Instruction
-{
-	friend ProgramData;
-
-public:
-	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Push, Pop, Seek, Set, Stop };
-	typedef int value_type;
-
-	Instruction(Type, Instruction*);
-	Instruction(Type, value_type = 0, value_type = 0);
-
-	void Execute() const;
-
-	bool operator==(Type) const;
-
-	static void SetParent(ProgramData*);
-	static void Orphan(ProgramData*);
-
-private:
-	const Type Command;
-	union
-	{
-		value_type Data[2];
-		Instruction* Pointer;
-	};
-
-	static ProgramData* Parent;
-	static std::vector<value_type> Storage;
-};
-
-inline bool operator==(Instruction::Type x, const Instruction& y);
-inline bool operator!=(const Instruction& x, Instruction::Type y);
-inline bool operator!=(Instruction::Type x, const Instruction& y);
