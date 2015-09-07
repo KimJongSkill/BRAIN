@@ -17,6 +17,23 @@ Instruction::value_type Instruction::TemporaryValue = 0;
 Memory::Front_tag Memory::Front{};
 Memory::Back_tag Memory::Back{};
 
+const std::array<std::function<void(Instruction*)>, 13> Instruction::FunctionPointers
+{
+	[](Instruction* x) {},
+	[](Instruction* x) { std::advance(Parent->DataPointer, *x->Data); },
+	[](Instruction* x) { *Parent->DataPointer += *x->Data; },
+	[](Instruction* x) { *Parent->DataPointer = InputByte(); },
+	[](Instruction* x) { OutputByte(*Parent->DataPointer); },
+	[](Instruction* x) { if (*Parent->DataPointer == 0) Parent->InstructionPointer = x->Pointer; },
+	[](Instruction* x) { if (*Parent->DataPointer != 0) Parent->InstructionPointer = x->Pointer; },
+	[](Instruction* x) { std::fill_n(Parent->DataPointer, x->Data[0], 0); std::advance(Parent->DataPointer, x->Data[1]); },
+	[](Instruction* x) { std::advance(Parent->DataPointer, x->Data[0]); *Parent->DataPointer += x->Data[1] * TemporaryValue; },
+	[](Instruction* x) { TemporaryValue = *Parent->DataPointer; *Parent->DataPointer = 0; },
+	[](Instruction* x) { while (*Parent->DataPointer) std::advance(Parent->DataPointer, *x->Data); },
+	[](Instruction* x) { *Parent->DataPointer = *x->Data; },
+	[](Instruction* x) {}
+};
+
 void Instruction::SetParent(ProgramData* Adopter)
 {
 	if (Parent == nullptr)
@@ -277,7 +294,10 @@ ProgramData::~ProgramData()
 void ProgramData::Run()
 {
 	while (InstructionPointer->Command != Instruction::Type::Stop)
-		InstructionPointer++->FunctionPointer();
+	{
+		auto Temp = InstructionPointer++;
+		Temp->FunctionPointer(Temp);
+	}
 }
 
 bool Instruction::operator==(Type y) const

@@ -72,16 +72,17 @@ private:
 	std::pair<std::ptrdiff_t, std::ptrdiff_t> Limits{ 0, 255 };
 };
 
+class Instruction;
+
 class ProgramData
 {
-	friend class Instruction;
-
 	std::vector<Instruction> Text;
-	std::vector<Instruction>::pointer InstructionPointer;
 	Memory Cells;
-	Memory::iterator DataPointer = std::begin(Cells);
 
 public:
+	std::vector<Instruction>::pointer InstructionPointer;
+	Memory::iterator DataPointer = std::begin(Cells);
+
 	explicit ProgramData(const std::string& Source);
 	~ProgramData();
 
@@ -90,8 +91,6 @@ public:
 
 class Instruction
 {
-	friend ProgramData;
-
 public:
 	enum Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Store, Seek, Set, Stop };
 	typedef int value_type;
@@ -104,7 +103,6 @@ public:
 	static void SetParent(ProgramData*);
 	static void Orphan(ProgramData*);
 
-private:
 	const Type Command;
 	union
 	{
@@ -115,23 +113,8 @@ private:
 	static ProgramData* Parent;
 	static value_type TemporaryValue;
 
-	const std::array<std::function<void(void)>, 13> FunctionPointers
-	{
-		[this] {},
-		[this] { std::advance(Parent->DataPointer, *Data); },
-		[this] { *Parent->DataPointer += *Data; },
-		[this] { *Parent->DataPointer = InputByte(); },
-		[this] { OutputByte(*Parent->DataPointer); },
-		[this] { if (*Parent->DataPointer == 0) Parent->InstructionPointer = Pointer; },
-		[this] { if (*Parent->DataPointer != 0) Parent->InstructionPointer = Pointer; },
-		[this] { std::fill_n(Parent->DataPointer, Data[0], 0); std::advance(Parent->DataPointer, Data[1]); },
-		[this] { std::advance(Parent->DataPointer, Data[0]); *Parent->DataPointer += Data[1] * TemporaryValue; },
-		[this] { TemporaryValue = *Parent->DataPointer; *Parent->DataPointer = 0; },
-		[this] { while (*Parent->DataPointer) std::advance(Parent->DataPointer, *Data); },
-		[this] { *Parent->DataPointer = *Data; },
-		[this] {}
-	};
-	const std::function<void(void)> FunctionPointer;
+	static const std::array<std::function<void(Instruction*)>, 13> FunctionPointers;
+	const std::function<void(Instruction*)> FunctionPointer;
 };
 
 inline bool operator==(Instruction::Type x, const Instruction& y);
