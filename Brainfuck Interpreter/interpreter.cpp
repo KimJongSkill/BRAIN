@@ -373,7 +373,7 @@ Memory_iterator& Memory_iterator::operator++()
 	return *this;
 }
 
-Memory_iterator& Memory_iterator::operator++(int)
+Memory_iterator Memory_iterator::operator++(int)
 {
 	auto Temp = *this;
 	++*this;
@@ -387,7 +387,7 @@ Memory_iterator& Memory_iterator::operator--()
 	return *this;
 }
 
-Memory_iterator& Memory_iterator::operator--(int)
+Memory_iterator Memory_iterator::operator--(int)
 {
 	auto Temp = *this;
 	--*this;

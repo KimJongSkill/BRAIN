@@ -18,10 +18,10 @@ public:
 	pointer operator->() const;
 
 	Memory_iterator& operator++();
-	Memory_iterator& operator++(int);
+	Memory_iterator operator++(int);
 
 	Memory_iterator& operator--();
-	Memory_iterator& operator--(int);
+	Memory_iterator operator--(int);
 
 	difference_type operator-(const Memory_iterator&) const;
 
