@@ -43,6 +43,17 @@ public:
 	Instruction(Type, Instruction*);
 	Instruction(Type, value_type = 0, value_type = 0);
 
+	Instruction& operator=(const Instruction& x)
+	{
+		Command = x.Command;
+		if (x.Command == Type::LoopStart || x.Command == Type::LoopEnd)
+			Pointer = x.Pointer;
+		else
+			std::copy(std::cbegin(x.Data), std::cend(x.Data), std::begin(Data));
+
+		return *this;
+	}
+
 	void Execute() const;
 
 	bool operator==(Type) const;
@@ -51,7 +62,7 @@ public:
 	static void Orphan(ProgramData*);
 
 private:
-	const Type Command;
+	Type Command;
 	union
 	{
 		value_type Data[2];

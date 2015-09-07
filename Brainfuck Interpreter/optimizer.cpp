@@ -1,8 +1,10 @@
 #include "program.hpp"
 
 #include <algorithm>
-#include <numeric>
 #include <iterator>
+#include <array>
+#include <vector>
+#include <numeric>
 
 bool ProgramData::AttemptReset(Instruction* Begin, Instruction* End)
 {
@@ -75,29 +77,72 @@ bool ProgramData::AttemptSeek(Instruction* Begin, Instruction* End)
 bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 {
 	/*
-	*	If this loop only contains MovePointer
-	*	and Addition instructions, then we should be
+	*	If this loop does not contain other non-optimized loops, Seek's,
+	*	and Input/Output instructions, then we should be
 	*	able to replace it with Multiplication instructions
+	*	and a Push/Pop pair
 	*/
 
-	if (std::all_of(std::next(Begin), End, [](const Instruction& x)
-	{ return x == Instruction::Type::Addition || x == Instruction::Type::MovePointer; }))
+	static constexpr std::array<Instruction::Type, 5> Unwanted = { Instruction::Type::LoopStart, Instruction::Type::LoopEnd,
+		Instruction::Type::Input, Instruction::Type::Output, Instruction::Type::Seek };
+
+	if (std::find_first_of(std::next(Begin), End, std::cbegin(Unwanted), std::cend(Unwanted)) == End)
 	{
 		Instruction::value_type CurrentOffset = 0;
 		Instruction::value_type LastOffset = 0;
-		// Offset, Value
-		std::list<std::pair<Instruction::value_type, Instruction::value_type>> Operations;
+
+		std::vector<Instruction> Operations;
+		Operations.reserve(std::distance(Begin, End));
+		std::vector<Instruction::value_type> Cell0Operations;
 
 		for (auto Iterator = std::next(Begin); Iterator != End; ++Iterator)
 		{
-			if (*Iterator == Instruction::Type::MovePointer)
+			switch (Iterator->Command)
 			{
+			case Instruction::Type::MovePointer:
 				CurrentOffset += *Iterator->Data;
-			}
-			else if (*Iterator == Instruction::Type::Addition)
-			{
-				Operations.emplace_back(CurrentOffset - LastOffset, *Iterator->Data);
-				LastOffset = CurrentOffset;
+				break;
+			case Instruction::Type::Addition:
+				if (!CurrentOffset)
+				{
+					Cell0Operations.push_back(*Iterator->Data);
+				}
+				else
+				{
+					Operations.emplace_back(Instruction::Type::Multiplication, CurrentOffset - LastOffset, *Iterator->Data);
+
+					LastOffset = CurrentOffset;
+				}
+				break;
+			case Instruction::Type::Multiplication:
+				if (!CurrentOffset)
+				{
+					// Not yet implemented, needs more experimenting
+					return false;
+				}
+				else
+				{
+					CurrentOffset += Iterator->Data[0];
+
+					Operations.emplace_back(Instruction::Type::Multiplication, CurrentOffset - LastOffset, Iterator->Data[1]);
+
+					LastOffset = CurrentOffset;
+				}
+				break;
+			case Instruction::Type::Push:
+				Operations.emplace_back(Instruction::Type::Push, CurrentOffset);
+				break;
+			case Instruction::Type::Pop:
+				Operations.emplace_back(Instruction::Type::Pop, CurrentOffset);
+				break;
+			case Instruction::Type::Set:
+				Operations.emplace_back(Instruction::Type::Set, CurrentOffset, *Iterator->Data);
+				break;
+			case Instruction::Type::Reset:
+				Operations.emplace_back(Instruction::Type::Reset, Iterator->Data[0], Iterator->Data[1]);
+				break;
+			default:
+				throw std::runtime_error("This shouldn't have happened. Probably a missing clause in the switch.");
 			}
 		}
 
@@ -105,36 +150,28 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 		*	Make sure the Pointer ended up were it started
 		*	and only 1 was subtracted from Cell #0
 		*/
-		if (!CurrentOffset && std::count_if(std::cbegin(Operations), std::cend(Operations), [](std::pair<std::intptr_t, std::intptr_t> x)
-		{ return x.first == 0; }) == 1)
+		if (!CurrentOffset && !std::empty(Cell0Operations)
+			&& std::accumulate(std::cbegin(Cell0Operations), std::cend(Cell0Operations), 0) == -1)
 		{
-			auto Cell0 = std::find_if(std::cbegin(Operations), std::cend(Operations), [](std::pair<std::intptr_t, std::intptr_t> x)
-			{ return x.first == 0; });
+			/*
+			*	We cannot use std::vector::erase because
+			*	we have a pointer, not an iterator, so
+			*	we have to remove the elements one at a time
+			*/
+			while (Begin <= &Text.back())
+				Text.pop_back();
+			JumpTable.pop();
 
-			if (Cell0->second == -1)
-			{
-				/*
-				*	We cannot use std::vector::erase because
-				*	we have a pointer, not an iterator, so
-				*	we have to remove the elements one at a time
-				*/
-				while (Begin <= &Text.back())
-					Text.pop_back();
-				JumpTable.pop();
-				Operations.erase(Cell0);
+			Text.emplace_back(Instruction::Type::Push);
 
-				Text.emplace_back(Instruction::Type::Push);
+			for (auto Operation : Operations)
+				Text.emplace_back(Operation);
 
-				for (const auto& Operation : Operations)
-					Text.emplace_back(Instruction::Type::Multiplication, Operation.first, Operation.second);
+			Text.emplace_back(Instruction::Type::Pop);
 
-				Text.emplace_back(Instruction::Type::Pop);
+			Text.emplace_back(Instruction::Type::MovePointer, -LastOffset);
 
-				Text.emplace_back(Instruction::Type::MovePointer, -std::accumulate(std::cbegin(Operations), std::cend(Operations), 0,
-					[](auto x, const std::pair<Instruction::value_type, Instruction::value_type>& y) { return x + y.first; }));
-
-				return true;
-			}
+			return true;
 		}
 	}
 
