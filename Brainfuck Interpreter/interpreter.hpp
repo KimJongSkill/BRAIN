@@ -1,10 +1,13 @@
 #pragma once
 
+#include "io.hpp"
+
 #include <vector>
 #include <list>
 #include <array>
 #include <cstdint>
 #include <iterator>
+#include <functional>
 
 class Memory_iterator : public std::iterator<std::random_access_iterator_tag, char>
 {
@@ -90,13 +93,11 @@ class Instruction
 	friend ProgramData;
 
 public:
-	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Store, Seek, Set, Stop };
+	enum Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Store, Seek, Set, Stop };
 	typedef int value_type;
 
 	Instruction(Type, Instruction*);
 	Instruction(Type, value_type = 0, value_type = 0);
-
-	void Execute() const;
 
 	bool operator==(Type) const;
 
@@ -113,6 +114,24 @@ private:
 
 	static ProgramData* Parent;
 	static value_type TemporaryValue;
+
+	const std::array<std::function<void(void)>, 13> FunctionPointers
+	{
+		[this] {},
+		[this] { std::advance(Parent->DataPointer, *Data); },
+		[this] { *Parent->DataPointer += *Data; },
+		[this] { *Parent->DataPointer = InputByte(); },
+		[this] { OutputByte(*Parent->DataPointer); },
+		[this] { if (*Parent->DataPointer == 0) Parent->InstructionPointer = Pointer; },
+		[this] { if (*Parent->DataPointer != 0) Parent->InstructionPointer = Pointer; },
+		[this] { std::fill_n(Parent->DataPointer, Data[0], 0); std::advance(Parent->DataPointer, Data[1]); },
+		[this] { std::advance(Parent->DataPointer, Data[0]); *Parent->DataPointer += Data[1] * TemporaryValue; },
+		[this] { TemporaryValue = *Parent->DataPointer; *Parent->DataPointer = 0; },
+		[this] { while (*Parent->DataPointer) std::advance(Parent->DataPointer, *Data); },
+		[this] { *Parent->DataPointer = *Data; },
+		[this] {}
+	};
+	const std::function<void(void)> FunctionPointer;
 };
 
 inline bool operator==(Instruction::Type x, const Instruction& y);
