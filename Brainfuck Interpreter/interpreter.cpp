@@ -1,5 +1,4 @@
 #include "interpreter.hpp"
-#include "io.hpp"
 
 #include <iterator>
 #include <utility>
@@ -8,9 +7,9 @@
 #include <algorithm>
 #include <numeric>
 
-Instruction::Instruction(Type x, Instruction* y) : Command(x), Pointer(y) { }
+Instruction::Instruction(Type x, Instruction* y) : Command(x), Pointer(y), FunctionPointer(FunctionPointers[Command]) { }
 
-Instruction::Instruction(Type x, value_type y, value_type z) : Command(x), Data{ y, z } { }
+Instruction::Instruction(Type x, value_type y, value_type z) : Command(x), Data{ y, z }, FunctionPointer(FunctionPointers[Command]) { }
 
 ProgramData* Instruction::Parent = nullptr;
 Instruction::value_type Instruction::TemporaryValue = 0;
@@ -18,51 +17,22 @@ Instruction::value_type Instruction::TemporaryValue = 0;
 Memory::Front_tag Memory::Front{};
 Memory::Back_tag Memory::Back{};
 
-void Instruction::Execute() const
+const std::array<void(*)(Instruction*), 13> Instruction::FunctionPointers
 {
-	switch (Command)
-	{
-	case Type::MovePointer:
-		std::advance(Parent->DataPointer, *Data);
-		break;
-	case Type::Addition:
-		*Parent->DataPointer += *Data;
-		break;
-	case Type::Input:
-		*Parent->DataPointer = InputByte();
-		break;
-	case Type::Output:
-		OutputByte(*Parent->DataPointer);
-		break;
-	case Type::LoopStart:
-		if (*Parent->DataPointer == 0)
-			Parent->InstructionPointer = Pointer;
-		break;
-	case Type::LoopEnd:
-		if (*Parent->DataPointer != 0)
-			Parent->InstructionPointer = Pointer;
-		break;
-	case Type::Store:
-		TemporaryValue = *Parent->DataPointer;
-		*Parent->DataPointer = 0;
-		break;
-	case Type::Reset:
-		std::fill_n(Parent->DataPointer, Data[0], 0);
-		std::advance(Parent->DataPointer, Data[1]);
-		break;
-	case Type::Multiplication:
-		std::advance(Parent->DataPointer, Data[0]);
-		*Parent->DataPointer += Data[1] * TemporaryValue;
-		break;
-	case Type::Seek:
-		while (*Parent->DataPointer)
-			std::advance(Parent->DataPointer, *Data);
-		break;
-	case Type::Set:
-		*Parent->DataPointer = *Data;
-		break;
-	}
-}
+	[](Instruction* x) {},
+	[](Instruction* x) { std::advance(Parent->DataPointer, *x->Data); },
+	[](Instruction* x) { *Parent->DataPointer += *x->Data; },
+	[](Instruction* x) { *Parent->DataPointer = InputByte(); },
+	[](Instruction* x) { OutputByte(*Parent->DataPointer); },
+	[](Instruction* x) { if (*Parent->DataPointer == 0) Parent->InstructionPointer = x->Pointer; },
+	[](Instruction* x) { if (*Parent->DataPointer != 0) Parent->InstructionPointer = x->Pointer; },
+	[](Instruction* x) { std::fill_n(Parent->DataPointer, x->Data[0], 0); std::advance(Parent->DataPointer, x->Data[1]); },
+	[](Instruction* x) { std::advance(Parent->DataPointer, x->Data[0]); *Parent->DataPointer += x->Data[1] * TemporaryValue; },
+	[](Instruction* x) { TemporaryValue = *Parent->DataPointer; *Parent->DataPointer = 0; },
+	[](Instruction* x) { while (*Parent->DataPointer) std::advance(Parent->DataPointer, *x->Data); },
+	[](Instruction* x) { *Parent->DataPointer = *x->Data; },
+	[](Instruction* x) {}
+};
 
 void Instruction::SetParent(ProgramData* Adopter)
 {
@@ -324,7 +294,10 @@ ProgramData::~ProgramData()
 void ProgramData::Run()
 {
 	while (InstructionPointer->Command != Instruction::Type::Stop)
-		InstructionPointer++->Execute();
+	{
+		auto Temp = InstructionPointer++;
+		Temp->FunctionPointer(Temp);
+	}
 }
 
 bool Instruction::operator==(Type y) const
@@ -450,25 +423,26 @@ auto Memory_iterator::operator[](difference_type Offset) const -> reference
 	return *(*this + Offset);
 }
 
-void Memory_iterator::Advance(Memory_iterator& Target, std::ptrdiff_t Delta)
+void Memory_iterator::Advance(Memory_iterator& Target, const std::ptrdiff_t Delta)
 {
-	std::ptrdiff_t NewIndex = Target.Index + Delta;
+	constexpr std::ptrdiff_t Flag = ~std::ptrdiff_t(0xff); // 0xff...ff00 
+	const std::ptrdiff_t NewIndex = Target.Index + Delta;
 
-	if (NewIndex > Target.Parent->Limits.second)
-		Target.Pointer = Target.Parent->RequestNewPage(Memory::Back);
-	else if (NewIndex < Target.Parent->Limits.first)
-		Target.Pointer = Target.Parent->RequestNewPage(Memory::Front);
 	/*
-	*	Check if the iterator has moved to another page.
-	*	Each page can hold 256 elements, so the first byte
+	*	Check if the iterator has not moved to another page.
+	*	Each page can hold 256 (0xff) elements, so the first byte
 	*	of the Index stores the index within a page and
 	*	the other bytes store the index of the page within
 	*	the list.
 	*/
-	else if (NewIndex >> 8 != Target.Index >> 8)
-		Target.Pointer = std::next(std::next(Target.Parent->Origin, NewIndex >> 8)->data(), NewIndex & 0xff);
+	if ((Target.Index & Flag) == (NewIndex & Flag))
+		std::advance(Target.Pointer, Delta);
+	else if (NewIndex > Target.Parent->Limits.second)
+		Target.Pointer = Target.Parent->RequestNewPage(Memory::Back);
+	else if (NewIndex < Target.Parent->Limits.first)
+		Target.Pointer = Target.Parent->RequestNewPage(Memory::Front);
 	else
-		Target.Pointer = Target.Pointer + Delta;
+		Target.Pointer = std::next(std::next(Target.Parent->Origin, NewIndex >> 8)->data(), NewIndex & 0xff);
 
 	Target.Index = NewIndex;
 }

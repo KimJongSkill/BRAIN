@@ -1,5 +1,7 @@
 #pragma once
 
+#include "io.hpp"
+
 #include <vector>
 #include <list>
 #include <array>
@@ -69,16 +71,17 @@ private:
 	std::pair<std::ptrdiff_t, std::ptrdiff_t> Limits{ 0, 255 };
 };
 
+class Instruction;
+
 class ProgramData
 {
-	friend class Instruction;
-
 	std::vector<Instruction> Text;
-	std::vector<Instruction>::pointer InstructionPointer;
 	Memory Cells;
-	Memory::iterator DataPointer = std::begin(Cells);
 
 public:
+	std::vector<Instruction>::pointer InstructionPointer;
+	Memory::iterator DataPointer = std::begin(Cells);
+
 	explicit ProgramData(const std::string& Source);
 	~ProgramData();
 
@@ -87,24 +90,20 @@ public:
 
 class Instruction
 {
-	friend ProgramData;
-
 public:
-	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Store, Seek, Set, Stop };
+	enum Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Store, Seek, Set, Stop };
 	typedef int value_type;
 
 	Instruction(Type, Instruction*);
 	Instruction(Type, value_type = 0, value_type = 0);
-
-	void Execute() const;
 
 	bool operator==(Type) const;
 
 	static void SetParent(ProgramData*);
 	static void Orphan(ProgramData*);
 
-private:
 	const Type Command;
+	void(*FunctionPointer)(Instruction*);
 	union
 	{
 		value_type Data[2];
@@ -113,6 +112,8 @@ private:
 
 	static ProgramData* Parent;
 	static value_type TemporaryValue;
+
+	static const std::array<void(*)(Instruction*), 13> FunctionPointers;
 };
 
 inline bool operator==(Instruction::Type x, const Instruction& y);
