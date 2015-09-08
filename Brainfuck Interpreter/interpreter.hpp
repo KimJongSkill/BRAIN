@@ -7,7 +7,6 @@
 #include <array>
 #include <cstdint>
 #include <iterator>
-#include <functional>
 
 class Memory_iterator : public std::iterator<std::random_access_iterator_tag, char>
 {
@@ -104,6 +103,7 @@ public:
 	static void Orphan(ProgramData*);
 
 	const Type Command;
+	void(*FunctionPointer)(Instruction*);
 	union
 	{
 		value_type Data[2];
@@ -113,8 +113,7 @@ public:
 	static ProgramData* Parent;
 	static value_type TemporaryValue;
 
-	static const std::array<std::function<void(Instruction*)>, 13> FunctionPointers;
-	const std::function<void(Instruction*)> FunctionPointer;
+	static const std::array<void(*)(Instruction*), 13> FunctionPointers;
 };
 
 inline bool operator==(Instruction::Type x, const Instruction& y);

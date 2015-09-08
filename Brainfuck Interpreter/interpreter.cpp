@@ -17,7 +17,7 @@ Instruction::value_type Instruction::TemporaryValue = 0;
 Memory::Front_tag Memory::Front{};
 Memory::Back_tag Memory::Back{};
 
-const std::array<std::function<void(Instruction*)>, 13> Instruction::FunctionPointers
+const std::array<void(*)(Instruction*), 13> Instruction::FunctionPointers
 {
 	[](Instruction* x) {},
 	[](Instruction* x) { std::advance(Parent->DataPointer, *x->Data); },
