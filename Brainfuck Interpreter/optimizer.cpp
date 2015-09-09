@@ -130,16 +130,10 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 				}
 				break;
 			case Instruction::Type::Push:
-				Operations.emplace_back(Instruction::Type::Push, CurrentOffset);
-				break;
 			case Instruction::Type::Pop:
-				Operations.emplace_back(Instruction::Type::Pop, CurrentOffset);
-				break;
 			case Instruction::Type::Set:
-				Operations.emplace_back(Instruction::Type::Set, CurrentOffset, *Iterator->Data);
-				break;
 			case Instruction::Type::Reset:
-				Operations.emplace_back(Instruction::Type::Reset, Iterator->Data[0], Iterator->Data[1]);
+				Operations.push_back(*Iterator);
 				break;
 			default:
 				throw std::runtime_error("This shouldn't have happened. Probably a missing clause in the switch.");
