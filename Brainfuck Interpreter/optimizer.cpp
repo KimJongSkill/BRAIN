@@ -93,7 +93,7 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 
 		std::vector<Instruction> Operations;
 		Operations.reserve(std::distance(Begin, End));
-		std::vector<Instruction::value_type> Cell0Operations;
+		Instruction::value_type Cell0Total = 0;
 
 		for (auto Iterator = std::next(Begin); Iterator != End; ++Iterator)
 		{
@@ -105,7 +105,7 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 			case Instruction::Type::Addition:
 				if (!CurrentOffset)
 				{
-					Cell0Operations.push_back(*Iterator->Data);
+					Cell0Total += *Iterator->Data;
 				}
 				else
 				{
@@ -144,8 +144,7 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 		*	Make sure the Pointer ended up were it started
 		*	and only 1 was subtracted from Cell #0
 		*/
-		if (!CurrentOffset && !std::empty(Cell0Operations)
-			&& std::accumulate(std::cbegin(Cell0Operations), std::cend(Cell0Operations), 0) == -1)
+		if (!CurrentOffset && Cell0Total == -1)
 		{
 			/*
 			*	We cannot use std::vector::erase because
@@ -154,6 +153,7 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 			*/
 			while (Begin <= &Text.back())
 				Text.pop_back();
+
 			JumpTable.pop();
 
 			Text.emplace_back(Instruction::Type::Push);
