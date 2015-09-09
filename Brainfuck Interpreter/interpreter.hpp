@@ -60,11 +60,11 @@ public:
 	iterator end() const;
 
 private:
-	static struct Front_tag {} Front;
-	static struct Back_tag {} Back;
+	static struct Front_tag {} const Front;
+	static struct Back_tag {} const Back;
 
-	iterator::pointer RequestNewPage(Front_tag);
-	iterator::pointer RequestNewPage(Back_tag);
+	iterator::pointer RequestNewPage(const Front_tag);
+	iterator::pointer RequestNewPage(const Back_tag);
 
 	std::list<std::array<char, 256>> Storage{ { 0 } };
 	std::list<std::array<char, 256>>::iterator Origin = Storage.begin();

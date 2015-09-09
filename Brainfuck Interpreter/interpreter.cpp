@@ -14,8 +14,8 @@ Instruction::Instruction(Type x, value_type y, value_type z) : Command(x), Data{
 ProgramData* Instruction::Parent = nullptr;
 Instruction::value_type Instruction::TemporaryValue = 0;
 
-Memory::Front_tag Memory::Front{};
-Memory::Back_tag Memory::Back{};
+Memory::Front_tag const Memory::Front{};
+Memory::Back_tag const Memory::Back{};
 
 const std::array<void(*)(Instruction*), 13> Instruction::FunctionPointers
 {
@@ -467,7 +467,7 @@ auto Memory::end() const -> iterator
 	return New;
 }
 
-auto Memory::RequestNewPage(Front_tag) -> iterator::pointer
+auto Memory::RequestNewPage(const Front_tag) -> iterator::pointer
 {
 	Storage.emplace_front();
 	Storage.front().fill(0);
@@ -477,7 +477,7 @@ auto Memory::RequestNewPage(Front_tag) -> iterator::pointer
 	return &Storage.front().back();
 }
 
-auto Memory::RequestNewPage(Back_tag) -> iterator::pointer
+auto Memory::RequestNewPage(const Back_tag) -> iterator::pointer
 {
 	Storage.emplace_back();
 	Storage.back().fill(0);
