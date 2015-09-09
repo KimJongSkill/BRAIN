@@ -470,7 +470,6 @@ auto Memory::end() const -> iterator
 auto Memory::RequestNewPage(const Front_tag) -> iterator::pointer
 {
 	Storage.emplace_front();
-	Storage.front().fill(0);
 
 	Limits.first -= Storage.front().size();
 
@@ -480,7 +479,6 @@ auto Memory::RequestNewPage(const Front_tag) -> iterator::pointer
 auto Memory::RequestNewPage(const Back_tag) -> iterator::pointer
 {
 	Storage.emplace_back();
-	Storage.back().fill(0);
 
 	Limits.second += Storage.back().size();
 
