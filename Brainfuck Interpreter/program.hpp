@@ -5,36 +5,9 @@
 #include <vector>
 #include <stack>
 
-class ProgramData
-{
-	friend class Instruction;
-
-public:
-	explicit ProgramData(const std::string& Source);
-	~ProgramData();
-
-	void Run();
-
-private:
-	std::vector<Instruction> Text;
-	std::vector<Instruction>::pointer InstructionPointer;
-
-	Memory Cells;
-	Memory::iterator DataPointer = std::begin(Cells);
-
-	std::stack<Instruction*> JumpTable{ };
-
-	void Parse(const std::string& Source);
-
-	bool AttemptReset(Instruction* Begin, Instruction* End);
-	bool AttemptSeek(Instruction* Begin, Instruction* End);
-	bool AttemptMultiplication(Instruction* Begin, Instruction* End);
-	bool DropEmptyLoop(Instruction* Begin, Instruction* End);
-};
-
 class Instruction
 {
-	friend ProgramData;
+	friend class ProgramData;
 
 public:
 	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Push, Pop, Seek, Set, Stop };
@@ -70,7 +43,34 @@ private:
 	};
 
 	static ProgramData* Parent;
-	static std::vector<value_type> Storage;
+};
+
+class ProgramData
+{
+	friend Instruction;
+
+public:
+	explicit ProgramData(const std::string& Source);
+	~ProgramData();
+
+	void Run();
+
+private:
+	std::vector<Instruction> Text;
+	std::vector<Instruction>::pointer InstructionPointer;
+
+	Memory Cells;
+	Memory::iterator DataPointer = std::begin(Cells);
+
+	std::stack<Instruction*> JumpTable{ };
+	std::vector<Instruction::value_type> Storage;
+
+	void Parse(const std::string& Source);
+
+	bool AttemptReset(Instruction* Begin, Instruction* End);
+	bool AttemptSeek(Instruction* Begin, Instruction* End);
+	bool AttemptMultiplication(Instruction* Begin, Instruction* End);
+	bool DropEmptyLoop(Instruction* Begin, Instruction* End);
 };
 
 inline bool operator==(Instruction::Type x, const Instruction& y);

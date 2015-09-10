@@ -29,11 +29,11 @@ void Instruction::Execute() const
 			Parent->InstructionPointer = Pointer;
 		break;
 	case Type::Push:
-		Storage.push_back(*Parent->DataPointer);
+		Parent->Storage.push_back(*Parent->DataPointer);
 		*Parent->DataPointer = 0;
 		break;
 	case Type::Pop:
-		Storage.pop_back();
+		Parent->Storage.pop_back();
 		break;
 	case Type::Reset:
 		std::fill_n(Parent->DataPointer, Data[0], 0);
@@ -41,7 +41,7 @@ void Instruction::Execute() const
 		break;
 	case Type::Multiplication:
 		std::advance(Parent->DataPointer, Data[0]);
-		*Parent->DataPointer += std::accumulate(std::cbegin(Storage), std::cend(Storage), Data[1], std::multiplies<value_type>());
+		*Parent->DataPointer += std::accumulate(std::cbegin(Parent->Storage), std::cend(Parent->Storage), Data[1], std::multiplies<value_type>());
 		break;
 	case Type::Seek:
 		while (*Parent->DataPointer)

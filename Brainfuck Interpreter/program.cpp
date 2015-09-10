@@ -4,7 +4,6 @@ Instruction::Instruction(Type x, Instruction* y) : Command(x), Pointer(y) { }
 Instruction::Instruction(Type x, value_type y, value_type z) : Command(x), Data{ y, z } { }
 
 ProgramData* Instruction::Parent = nullptr;
-std::vector<Instruction::value_type> Instruction::Storage;
 
 void Instruction::SetParent(ProgramData* Adopter)
 {
