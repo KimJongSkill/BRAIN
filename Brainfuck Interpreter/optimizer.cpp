@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <iterator>
 #include <array>
-#include <vector>
-#include <numeric>
 
 bool ProgramData::AttemptReset(Instruction* Begin, Instruction* End)
 {
