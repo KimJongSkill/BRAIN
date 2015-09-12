@@ -10,7 +10,7 @@ class Instruction
 	friend class ProgramData;
 
 public:
-	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, Push, Pop, Seek, Set, Stop };
+	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, PushFast, Push, PopFast, Pop, Seek, Set, Stop };
 	typedef int value_type;
 
 	Instruction(Type, Instruction*);
@@ -64,6 +64,7 @@ private:
 
 	std::stack<Instruction*> JumpTable{ };
 	std::vector<Memory::cell_type> Storage;
+	char FastStorage = 0;
 
 	void Parse(const std::string& Source);
 

@@ -89,9 +89,20 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 		Instruction::value_type CurrentOffset = 0;
 		Instruction::value_type LastOffset = 0;
 
+		bool IsLeafLoop = true;
+
 		std::vector<Instruction> Operations;
 		Operations.reserve(std::distance(Begin, End));
 		Instruction::value_type Cell0Total = 0;
+
+		auto InsertMovePointer = [&]
+		{
+			if (CurrentOffset - LastOffset)
+			{
+				Operations.emplace_back(Instruction::Type::MovePointer, CurrentOffset - LastOffset);
+				CurrentOffset = LastOffset;
+			}
+		};
 
 		for (auto Iterator = std::next(Begin); Iterator != End; ++Iterator)
 		{
@@ -113,6 +124,8 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 				}
 				break;
 			case Instruction::Type::Multiplication:
+				CurrentOffset += Iterator->Data[0];
+
 				if (!CurrentOffset)
 				{
 					// Not yet implemented, needs more experimenting
@@ -120,8 +133,6 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 				}
 				else
 				{
-					CurrentOffset += Iterator->Data[0];
-
 					Operations.emplace_back(Instruction::Type::Multiplication, CurrentOffset - LastOffset, Iterator->Data[1]);
 
 					LastOffset = CurrentOffset;
@@ -129,15 +140,23 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 				break;
 			case Instruction::Type::Push:
 			case Instruction::Type::Pop:
+				IsLeafLoop = false;
 			case Instruction::Type::Set:
 			case Instruction::Type::Reset:
-				if (CurrentOffset - LastOffset)
-				{
-					Operations.emplace_back(Instruction::Type::MovePointer, CurrentOffset - LastOffset);
-					CurrentOffset = LastOffset;
-				}
-
+				InsertMovePointer();
 				Operations.push_back(*Iterator);
+				break;
+			case Instruction::Type::PushFast:
+				IsLeafLoop = false;
+
+				InsertMovePointer();
+				Operations.emplace_back(Instruction::Type::Push);
+				break;
+			case Instruction::Type::PopFast:
+				IsLeafLoop = false;
+
+				InsertMovePointer();
+				Operations.emplace_back(Instruction::Type::Pop);
 				break;
 			default:
 				throw std::runtime_error("This shouldn't have happened. Probably a missing clause in the switch.");
@@ -160,12 +179,12 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 
 			JumpTable.pop();
 
-			Text.emplace_back(Instruction::Type::Push);
-
+			Text.emplace_back(IsLeafLoop ? Instruction::Type::PushFast : Instruction::Type::Push);
+			
 			for (auto Operation : Operations)
 				Text.emplace_back(Operation);
 
-			Text.emplace_back(Instruction::Type::Pop);
+			Text.emplace_back(IsLeafLoop ? Instruction::Type::PopFast : Instruction::Type::Pop);
 
 			Text.emplace_back(Instruction::Type::MovePointer, -LastOffset);
 
