@@ -51,6 +51,7 @@ class Memory
 
 public:
 	typedef Memory_iterator iterator;
+	typedef char cell_type;
 
 	iterator begin() const;
 	iterator end() const;
@@ -62,7 +63,7 @@ private:
 	iterator::pointer RequestNewPage(Front_tag);
 	iterator::pointer RequestNewPage(Back_tag);
 
-	std::list<std::array<char, 256>> Storage{ { 0 } };
-	std::list<std::array<char, 256>>::iterator Origin = Storage.begin();
+	std::list<std::array<cell_type, 256>> Storage{ { 0 } };
+	std::list<std::array<cell_type, 256>>::iterator Origin = Storage.begin();
 	std::pair<std::ptrdiff_t, std::ptrdiff_t> Limits{ 0, 255 };
 };

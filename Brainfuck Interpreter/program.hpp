@@ -63,7 +63,7 @@ private:
 	Memory::iterator DataPointer = std::begin(Cells);
 
 	std::stack<Instruction*> JumpTable{ };
-	std::vector<Instruction::value_type> Storage;
+	std::vector<Memory::cell_type> Storage;
 
 	void Parse(const std::string& Source);
 
