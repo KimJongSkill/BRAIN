@@ -131,8 +131,11 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 			case Instruction::Type::Pop:
 			case Instruction::Type::Set:
 			case Instruction::Type::Reset:
-				Operations.emplace_back(Instruction::Type::MovePointer, CurrentOffset - LastOffset);
-				CurrentOffset = LastOffset;
+				if (CurrentOffset - LastOffset)
+				{
+					Operations.emplace_back(Instruction::Type::MovePointer, CurrentOffset - LastOffset);
+					CurrentOffset = LastOffset;
+				}
 
 				Operations.push_back(*Iterator);
 				break;
