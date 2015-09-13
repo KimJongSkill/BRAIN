@@ -33,23 +33,23 @@ int main(int argc, const char* argv[])
 		return EXIT_SUCCESS;
 	}
 	
-	auto Arguments = docopt::docopt(Documentation, { std::next(argv), std::next(argv, argc) }, true);
-
-	if (Arguments["--execute"].asBool())
-		Source = std::move(Arguments["SOURCE"].asString());
-	else
-		Source = Open(Arguments["FILE"].asString());
-
-	std::cout.rdbuf()->pubsetbuf(Buffer.data(), std::size(Buffer));
-
-	std::chrono::steady_clock::time_point Start;
-	std::chrono::steady_clock::time_point ParsingComplete;
-	std::chrono::steady_clock::time_point ExecutionComplete;
-	if (Arguments["--time"].asBool())
-		Start = std::chrono::steady_clock::now();
-
 	try
 	{
+		auto Arguments = docopt::docopt(Documentation, { std::next(argv), std::next(argv, argc) }, true);
+
+		if (Arguments["--execute"].asBool())
+			Source = std::move(Arguments["SOURCE"].asString());
+		else
+			Source = Open(Arguments["FILE"].asString());
+
+		std::cout.rdbuf()->pubsetbuf(Buffer.data(), std::size(Buffer));
+
+		std::chrono::steady_clock::time_point Start;
+		std::chrono::steady_clock::time_point ParsingComplete;
+		std::chrono::steady_clock::time_point ExecutionComplete;
+		if (Arguments["--time"].asBool())
+			Start = std::chrono::steady_clock::now();
+
 		Program.Parse(Source);
 		ParsingComplete = std::chrono::steady_clock::now();
 
@@ -63,6 +63,10 @@ int main(int argc, const char* argv[])
 			<< "Program execution finished in "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(ExecutionComplete - Start).count()
 			<< " ms\n";
+	}
+	catch (const std::ios::failure&)
+	{
+		std::cerr << "Unable to open file\n";
 	}
 	catch (const std::exception& Exception)
 	{
