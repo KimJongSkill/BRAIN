@@ -7,12 +7,12 @@
 
 namespace io
 {
-	void OutputByte(const std::uint8_t Character)
+	void OutputByte(const Memory::cell_type Character)
 	{
 		std::cout.put(Character);
 	}
 
-	std::uint8_t InputByte()
+	Memory::cell_type InputByte()
 	{
 		return std::cin.get();
 	}

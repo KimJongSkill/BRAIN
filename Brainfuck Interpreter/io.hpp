@@ -1,13 +1,15 @@
 #pragma once
 
+#include "memory.hpp"
+
 #include <cstdint>
 #include <string>
 
 namespace io
 {
-	void OutputByte(const std::uint8_t);
+	void OutputByte(const Memory::cell_type);
 
-	std::uint8_t InputByte();
+	Memory::cell_type InputByte();
 
 	std::string Open(const std::string&);
 
