@@ -5,33 +5,36 @@
 #include <sstream>
 #include <vector>
 
-void OutputByte(const std::uint8_t Character)
+namespace io
 {
-	std::cout.put(Character);
-}
+	void OutputByte(const std::uint8_t Character)
+	{
+		std::cout.put(Character);
+	}
 
-std::uint8_t InputByte()
-{
-	return std::cin.get();
-}
+	std::uint8_t InputByte()
+	{
+		return std::cin.get();
+	}
 
-std::string Open(const std::string& Path)
-{
-	std::stringstream Stream;
-	std::ifstream File;
-	
-	File.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-	File.open(Path);
+	std::string Open(const std::string& Path)
+	{
+		std::stringstream Stream;
+		std::ifstream File;
 
-	Stream << File.rdbuf();
+		File.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		File.open(Path);
 
-	return Stream.str();
-}
+		Stream << File.rdbuf();
 
-void CreateOutputBuffer(const std::size_t Size)
-{
-	static std::vector<char> Buffer;
+		return Stream.str();
+	}
 
-	Buffer.resize(Size);
-	std::cout.rdbuf()->pubsetbuf(Buffer.data(), Size);
+	void CreateOutputBuffer(const std::size_t Size)
+	{
+		static std::vector<char> Buffer;
+
+		Buffer.resize(Size);
+		std::cout.rdbuf()->pubsetbuf(Buffer.data(), Size);
+	}
 }

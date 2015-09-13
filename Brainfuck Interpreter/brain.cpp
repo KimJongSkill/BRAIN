@@ -38,9 +38,9 @@ int main(int argc, const char* argv[])
 		if (Arguments["--execute"].asBool())
 			Source = std::move(Arguments["SOURCE"].asString());
 		else
-			Source = Open(Arguments["FILE"].asString());
+			Source = io::Open(Arguments["FILE"].asString());
 		
-		CreateOutputBuffer(1024);
+		io::CreateOutputBuffer(1024);
 
 		std::chrono::steady_clock::time_point Start;
 		std::chrono::steady_clock::time_point ParsingComplete;
