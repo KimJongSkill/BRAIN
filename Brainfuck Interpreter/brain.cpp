@@ -6,7 +6,8 @@
 #include <chrono>
 #include <array>
 
-const std::string Documentation =
+const std::string Documentation
+{
 R"(BRAIN - Brainfuck Interpreter
 
     Usage:
@@ -17,7 +18,8 @@ R"(BRAIN - Brainfuck Interpreter
       -h, --help    Show this screen.
       -t, --time    Display execution time.
       -e --execute  Execute provided SOURCE instead of
-                    reading from FILE)";
+                    reading from FILE)" 
+};
 
 int main(int argc, const char* argv[])
 {
@@ -35,18 +37,13 @@ int main(int argc, const char* argv[])
 	{
 		auto Arguments = docopt::docopt(Documentation, { std::next(argv), std::next(argv, argc) }, true);
 
-		if (Arguments["--execute"].asBool())
-			Source = std::move(Arguments["SOURCE"].asString());
-		else
-			Source = io::Open(Arguments["FILE"].asString());
-		
+		Source = Arguments["--execute"].asBool() ? Arguments["SOURCE"].asString() : io::Open(Arguments["FILE"].asString());
+
 		io::CreateOutputBuffer(1024);
 
-		std::chrono::steady_clock::time_point Start;
+		std::chrono::steady_clock::time_point Start = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point ParsingComplete;
 		std::chrono::steady_clock::time_point ExecutionComplete;
-		if (Arguments["--time"].asBool())
-			Start = std::chrono::steady_clock::now();
 
 		Program.Parse(Source);
 		ParsingComplete = std::chrono::steady_clock::now();
