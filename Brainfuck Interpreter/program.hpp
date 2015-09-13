@@ -10,32 +10,19 @@ class Instruction
 	friend class ProgramData;
 
 public:
-	enum class Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, PushFast, Push, PopFast, Pop, Seek, Set, Stop };
+	enum Type { Nop, MovePointer, Addition, Input, Output, LoopStart, LoopEnd, Reset, Multiplication, PushFast, Push, PopFast, Pop, Seek, Set, Stop };
 	typedef int value_type;
 
 	Instruction(Type, Instruction*);
 	Instruction(Type, value_type = 0, value_type = 0);
-
-	Instruction& operator=(const Instruction& x)
-	{
-		Command = x.Command;
-		if (x.Command == Type::LoopStart || x.Command == Type::LoopEnd)
-			Pointer = x.Pointer;
-		else
-			std::copy(std::cbegin(x.Data), std::cend(x.Data), std::begin(Data));
-
-		return *this;
-	}
-
-	void Execute() const;
 
 	bool operator==(Type) const;
 
 	static void SetParent(ProgramData*);
 	static void Orphan(ProgramData*);
 
-private:
 	Type Command;
+	void(*FunctionPointer)(Instruction*);
 	union
 	{
 		value_type Data[2];
@@ -43,11 +30,14 @@ private:
 	};
 
 	static ProgramData* Parent;
+
+	static const std::array<void(*)(Instruction*), 16> FunctionPointers;
 };
 
 class ProgramData
 {
-	friend Instruction;
+	std::vector<Instruction> Text;
+	Memory Cells;
 
 public:
 	explicit ProgramData(const std::string& Source);
@@ -55,11 +45,7 @@ public:
 
 	void Run();
 
-private:
-	std::vector<Instruction> Text;
 	std::vector<Instruction>::pointer InstructionPointer;
-
-	Memory Cells;
 	Memory::iterator DataPointer = std::begin(Cells);
 
 	std::stack<Instruction*> JumpTable{ };
@@ -68,6 +54,7 @@ private:
 
 	void Parse(const std::string& Source);
 
+private:
 	bool AttemptReset(Instruction* Begin, Instruction* End);
 	bool AttemptSeek(Instruction* Begin, Instruction* End);
 	bool AttemptMultiplication(Instruction* Begin, Instruction* End);

@@ -1,7 +1,7 @@
 #include "memory.hpp"
 
-Memory::Front_tag Memory::Front{};
-Memory::Back_tag Memory::Back{};
+Memory::Front_tag const Memory::Front{};
+Memory::Back_tag const Memory::Back{};
 
 bool Memory_iterator::operator==(const Memory_iterator& Other) const
 {
@@ -30,7 +30,7 @@ Memory_iterator& Memory_iterator::operator++()
 	return *this;
 }
 
-Memory_iterator& Memory_iterator::operator++(int)
+Memory_iterator Memory_iterator::operator++(int)
 {
 	auto Temp = *this;
 	++*this;
@@ -44,7 +44,7 @@ Memory_iterator& Memory_iterator::operator--()
 	return *this;
 }
 
-Memory_iterator& Memory_iterator::operator--(int)
+Memory_iterator Memory_iterator::operator--(int)
 {
 	auto Temp = *this;
 	--*this;
@@ -107,25 +107,26 @@ auto Memory_iterator::operator[](difference_type Offset) const -> reference
 	return *(*this + Offset);
 }
 
-void Memory_iterator::Advance(Memory_iterator& Target, std::ptrdiff_t Delta)
+void Memory_iterator::Advance(Memory_iterator& Target, const std::ptrdiff_t Delta)
 {
-	std::ptrdiff_t NewIndex = Target.Index + Delta;
+	constexpr std::ptrdiff_t Flag = ~std::ptrdiff_t(0xff); // 0xff...ff00 
+	const std::ptrdiff_t NewIndex = Target.Index + Delta;
 
-	if (NewIndex > Target.Parent->Limits.second)
-		Target.Pointer = Target.Parent->RequestNewPage(Memory::Back);
-	else if (NewIndex < Target.Parent->Limits.first)
-		Target.Pointer = Target.Parent->RequestNewPage(Memory::Front);
 	/*
-	*	Check if the iterator has moved to another page.
-	*	Each page can hold 256 elements, so the first byte
+	*	Check if the iterator has not moved to another page.
+	*	Each page can hold 256 (0xff) elements, so the first byte
 	*	of the Index stores the index within a page and
 	*	the other bytes store the index of the page within
 	*	the list.
 	*/
-	else if (NewIndex >> 8 != Target.Index >> 8)
-		Target.Pointer = std::next(std::next(Target.Parent->Origin, NewIndex >> 8)->data(), NewIndex & 0xff);
+	if ((Target.Index & Flag) == (NewIndex & Flag))
+		std::advance(Target.Pointer, Delta);
+	else if (NewIndex > Target.Parent->Limits.second)
+		Target.Pointer = Target.Parent->RequestNewPage(Memory::Back);
+	else if (NewIndex < Target.Parent->Limits.first)
+		Target.Pointer = Target.Parent->RequestNewPage(Memory::Front);
 	else
-		Target.Pointer = Target.Pointer + Delta;
+		Target.Pointer = std::next(std::next(Target.Parent->Origin, NewIndex >> 8)->data(), NewIndex & 0xff);
 
 	Target.Index = NewIndex;
 }
@@ -150,20 +151,18 @@ auto Memory::end() const -> iterator
 	return New;
 }
 
-auto Memory::RequestNewPage(Front_tag) -> iterator::pointer
+auto Memory::RequestNewPage(const Front_tag) -> iterator::pointer
 {
 	Storage.emplace_front();
-	Storage.front().fill(0);
 
 	Limits.first -= Storage.front().size();
 
 	return &Storage.front().back();
 }
 
-auto Memory::RequestNewPage(Back_tag) -> iterator::pointer
+auto Memory::RequestNewPage(const Back_tag) -> iterator::pointer
 {
 	Storage.emplace_back();
-	Storage.back().fill(0);
 
 	Limits.second += Storage.back().size();
 

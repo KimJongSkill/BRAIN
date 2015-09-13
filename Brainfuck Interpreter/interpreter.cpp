@@ -4,67 +4,38 @@
 #include <iterator>
 #include <numeric>
 
-void Instruction::Execute() const
+const std::array<void(*)(Instruction*), 16> Instruction::FunctionPointers
 {
-	switch (Command)
-	{
-	case Type::MovePointer:
-		std::advance(Parent->DataPointer, *Data);
-		break;
-	case Type::Addition:
-		*Parent->DataPointer += *Data;
-		break;
-	case Type::Input:
-		*Parent->DataPointer = InputByte();
-		break;
-	case Type::Output:
-		OutputByte(*Parent->DataPointer);
-		break;
-	case Type::LoopStart:
-		if (*Parent->DataPointer == 0)
-			Parent->InstructionPointer = Pointer;
-		break;
-	case Type::LoopEnd:
-		if (*Parent->DataPointer != 0)
-			Parent->InstructionPointer = Pointer;
-		break;
-	case Type::Push:
-		Parent->Storage.push_back(*Parent->DataPointer);
-		*Parent->DataPointer = 0;
-		break;
-	case Type::Pop:
-		Parent->Storage.pop_back();
-		break;
-	case Type::PushFast:
-		Parent->FastStorage = *Parent->DataPointer;
-		*Parent->DataPointer = 0;
-		break;
-	case Type::PopFast:
-		break;
-	case Type::Reset:
-		std::fill_n(Parent->DataPointer, Data[0], 0);
-		std::advance(Parent->DataPointer, Data[1]);
-		break;
-	case Type::Multiplication:
-		std::advance(Parent->DataPointer, Data[0]);
-
-		if (Parent->Storage.empty())
-			*Parent->DataPointer += Data[1] * Parent->FastStorage;
-		else
-			*Parent->DataPointer += std::accumulate(std::cbegin(Parent->Storage), std::cend(Parent->Storage), Data[1], std::multiplies<value_type>());
-		break;
-	case Type::Seek:
-		while (*Parent->DataPointer)
-			std::advance(Parent->DataPointer, *Data);
-		break;
-	case Type::Set:
-		*Parent->DataPointer = *Data;
-		break;
-	}
-}
+	[](Instruction* x) {},
+	[](Instruction* x) { std::advance(Parent->DataPointer, *x->Data); },
+	[](Instruction* x) { *Parent->DataPointer += *x->Data; },
+	[](Instruction* x) { *Parent->DataPointer = InputByte(); },
+	[](Instruction* x) { OutputByte(*Parent->DataPointer); },
+	[](Instruction* x) { if (*Parent->DataPointer == 0) Parent->InstructionPointer = x->Pointer; },
+	[](Instruction* x) { if (*Parent->DataPointer != 0) Parent->InstructionPointer = x->Pointer; },
+	[](Instruction* x) { std::fill_n(Parent->DataPointer, x->Data[0], 0); std::advance(Parent->DataPointer, x->Data[1]); },
+	[](Instruction* x) 
+{
+	std::advance(Parent->DataPointer, x->Data[0]); 
+	if (Parent->Storage.empty())
+		*Parent->DataPointer += x->Data[1] * Parent->FastStorage;
+	else
+		*Parent->DataPointer += std::accumulate(std::cbegin(Parent->Storage), std::cend(Parent->Storage), x->Data[1], std::multiplies<value_type>()); 
+},
+	[](Instruction* x) { Parent->FastStorage = *Parent->DataPointer; *Parent->DataPointer = 0; },
+	[](Instruction* x) { Parent->Storage.push_back(*Parent->DataPointer); *Parent->DataPointer = 0; },
+	[](Instruction* x) {},
+	[](Instruction* x) { Parent->Storage.pop_back(); },
+	[](Instruction* x) { while (*Parent->DataPointer) std::advance(Parent->DataPointer, *x->Data); },
+	[](Instruction* x) { *Parent->DataPointer = *x->Data; },
+	[](Instruction* x) {}
+};
 
 void ProgramData::Run()
 {
 	while (InstructionPointer->Command != Instruction::Type::Stop)
-		InstructionPointer++->Execute();
+	{
+		auto Temp = InstructionPointer++;
+		Temp->FunctionPointer(Temp);
+	}
 }
