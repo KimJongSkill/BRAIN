@@ -24,6 +24,7 @@ R"(BRAIN - Brainfuck Interpreter
 int main(int argc, const char* argv[])
 {
 	std::string Source;
+	ProgramData Program;
 
 	if (argc < 2)
 	{
@@ -49,7 +50,7 @@ int main(int argc, const char* argv[])
 
 	try
 	{
-		ProgramData Program(Source);
+		Program.Parse(Source);
 		ParsingComplete = std::chrono::steady_clock::now();
 
 		Program.Run();

@@ -40,19 +40,18 @@ class ProgramData
 	Memory Cells;
 
 public:
-	explicit ProgramData(const std::string& Source);
+	ProgramData();
 	~ProgramData();
 
 	void Run();
+	void Parse(const std::string& Source);
 
 	std::vector<Instruction>::pointer InstructionPointer;
-	Memory::iterator DataPointer = std::begin(Cells);
+	Memory::iterator DataPointer;
 
-	std::stack<Instruction*> JumpTable{ };
+	std::stack<Instruction*> JumpTable;
 	std::vector<Memory::cell_type> Storage;
-	char FastStorage = 0;
-
-	void Parse(const std::string& Source);
+	char FastStorage;
 
 private:
 	bool AttemptReset(Instruction* Begin, Instruction* End);

@@ -21,16 +21,13 @@ void Instruction::Orphan(ProgramData* Adopter)
 		Parent = nullptr;
 }
 
-ProgramData::ProgramData(const std::string& Source)
+ProgramData::ProgramData() : Text{ Instruction::Type::Nop }, DataPointer(std::begin(Cells)), FastStorage(0)
 {
-	// Dirty way to make sure our pointers do not get invalidated later on
-	Text.reserve(std::size(Source));
-	// Allows us to call std::vector::back
-	Text.emplace_back(Instruction::Type::Nop);
-
+	/*
+	*	Initialize Text with a Nop instruction so
+	*	that we can call std::vector::back when parsing.
+	*/
 	Instruction::SetParent(this);
-
-	Parse(Source);
 }
 
 ProgramData::~ProgramData()
