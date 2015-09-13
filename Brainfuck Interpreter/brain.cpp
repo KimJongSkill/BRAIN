@@ -6,8 +6,6 @@
 #include <chrono>
 #include <array>
 
-static std::array<char, 1024> Buffer;
-
 const std::string Documentation =
 R"(BRAIN - Brainfuck Interpreter
 
@@ -41,8 +39,8 @@ int main(int argc, const char* argv[])
 			Source = std::move(Arguments["SOURCE"].asString());
 		else
 			Source = Open(Arguments["FILE"].asString());
-
-		std::cout.rdbuf()->pubsetbuf(Buffer.data(), std::size(Buffer));
+		
+		CreateOutputBuffer(1024);
 
 		std::chrono::steady_clock::time_point Start;
 		std::chrono::steady_clock::time_point ParsingComplete;

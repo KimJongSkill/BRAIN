@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 void OutputByte(const std::uint8_t Character)
 {
@@ -25,4 +26,12 @@ std::string Open(const std::string& Path)
 	Stream << File.rdbuf();
 
 	return Stream.str();
+}
+
+void CreateOutputBuffer(const std::size_t Size)
+{
+	static std::vector<char> Buffer;
+
+	Buffer.resize(Size);
+	std::cout.rdbuf()->pubsetbuf(Buffer.data(), Size);
 }
