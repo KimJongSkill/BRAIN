@@ -1,5 +1,5 @@
 #include "io.hpp"
-#include "interpreter.hpp"
+#include "program.hpp"
 #include <docopt.h>
 
 #include <iostream>

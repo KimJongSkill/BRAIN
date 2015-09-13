@@ -165,10 +165,15 @@
     <ClCompile Include="brain.cpp" />
     <ClCompile Include="interpreter.cpp" />
     <ClCompile Include="io.cpp" />
+    <ClCompile Include="memory.cpp" />
+    <ClCompile Include="optimizer.cpp" />
+    <ClCompile Include="parser.cpp" />
+    <ClCompile Include="program.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="interpreter.hpp" />
+    <ClInclude Include="program.hpp" />
     <ClInclude Include="io.hpp" />
+    <ClInclude Include="memory.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
