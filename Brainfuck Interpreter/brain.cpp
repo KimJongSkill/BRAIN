@@ -15,11 +15,10 @@ R"(BRAIN - Brainfuck Interpreter
       brain [--help]
 
     Options:
-      -h, --help         Show this screen.
-      -t, --time         Display execution time.
-      -e --execute       Execute provided SOURCE instead of
-                         reading from FILE
-      -b, --buffer SIZE  Output buffer size in bytes. A value of 0 disables the buffer. [default: 512])"
+      -h, --help         Display this help message.
+      -t, --time         Display parsing and execution time.
+      -e, --execute      Execute provided SOURCE instead of reading from FILE.
+      -b, --buffer SIZE  Set Output Buffer size in bytes. A value of 0 disables the buffer. [default: 512])"
 };
 
 int main(int argc, const char* argv[])
