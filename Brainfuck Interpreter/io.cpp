@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <vector>
 
 namespace io
 {
@@ -30,14 +29,33 @@ namespace io
 		return Stream.str();
 	}
 
-	void CreateOutputBuffer(const std::size_t Size)
+	OutputBuffer::OutputBuffer(const std::size_t Size) : BufferPointer(nullptr)
 	{
-		static std::vector<char> Buffer;
-
-		if (Size)
+		try
 		{
-			Buffer.resize(Size);
-			std::cout.rdbuf()->pubsetbuf(Buffer.data(), Size);
+			if (Size)
+			{
+				BufferPointer = new Memory::cell_type[Size];
+				std::cout.rdbuf()->pubsetbuf(BufferPointer, Size);
+			}
 		}
+		catch (const std::bad_alloc&)
+		{
+			std::cerr << "Unable to allocate output buffer\n";
+		}
+	}
+
+	OutputBuffer::~OutputBuffer()
+	{
+		if (BufferPointer)
+		{
+			Flush();
+			delete[] BufferPointer;
+		}
+	}
+
+	void OutputBuffer::Flush()
+	{
+		std::cout.flush();
 	}
 }

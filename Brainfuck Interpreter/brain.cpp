@@ -40,7 +40,7 @@ int main(int argc, const char* argv[])
 
 		Source = Arguments["--execute"].asBool() ? Arguments["SOURCE"].asString() : io::Open(Arguments["FILE"].asString());
 
-		io::CreateOutputBuffer(std::stoll(Arguments["--buffer"].asString()));
+		io::OutputBuffer Buffer(std::stoll(Arguments["--buffer"].asString()));
 
 		std::chrono::steady_clock::time_point Start = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point ParsingComplete;

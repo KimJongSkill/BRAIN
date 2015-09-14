@@ -13,5 +13,18 @@ namespace io
 
 	std::string Open(const std::string&);
 
-	void CreateOutputBuffer(const std::size_t);
+	class OutputBuffer
+	{
+	public:
+		explicit OutputBuffer(const std::size_t);
+		~OutputBuffer();
+
+		OutputBuffer(const OutputBuffer&) = delete;
+		OutputBuffer& operator=(const OutputBuffer&) = delete;
+
+		void Flush();
+
+	private:
+		Memory::cell_type* BufferPointer;
+	};
 }
