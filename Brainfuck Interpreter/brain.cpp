@@ -11,14 +11,15 @@ const std::string Documentation
 R"(BRAIN - Brainfuck Interpreter
 
     Usage:
-      brain [--time] (--execute SOURCE | FILE)
+      brain [--time] [--buffer SIZE] (--execute SOURCE | FILE)
       brain [--help]
 
     Options:
-      -h, --help    Show this screen.
-      -t, --time    Display execution time.
-      -e --execute  Execute provided SOURCE instead of
-                    reading from FILE)" 
+      -h, --help         Show this screen.
+      -t, --time         Display execution time.
+      -e --execute       Execute provided SOURCE instead of
+                         reading from FILE
+      -b, --buffer SIZE  Output buffer size in bytes. A value of 0 disables the buffer. [default: 1024])"
 };
 
 int main(int argc, const char* argv[])
@@ -39,7 +40,7 @@ int main(int argc, const char* argv[])
 
 		Source = Arguments["--execute"].asBool() ? Arguments["SOURCE"].asString() : io::Open(Arguments["FILE"].asString());
 
-		io::CreateOutputBuffer(1024);
+		io::CreateOutputBuffer(std::stoll(Arguments["--buffer"].asString()));
 
 		std::chrono::steady_clock::time_point Start = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point ParsingComplete;

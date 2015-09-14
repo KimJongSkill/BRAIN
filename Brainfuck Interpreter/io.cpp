@@ -34,7 +34,10 @@ namespace io
 	{
 		static std::vector<char> Buffer;
 
-		Buffer.resize(Size);
-		std::cout.rdbuf()->pubsetbuf(Buffer.data(), Size);
+		if (Size)
+		{
+			Buffer.resize(Size);
+			std::cout.rdbuf()->pubsetbuf(Buffer.data(), Size);
+		}
 	}
 }
