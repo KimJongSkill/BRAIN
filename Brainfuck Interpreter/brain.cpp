@@ -19,7 +19,7 @@ R"(BRAIN - Brainfuck Interpreter
       -t, --time         Display execution time.
       -e --execute       Execute provided SOURCE instead of
                          reading from FILE
-      -b, --buffer SIZE  Output buffer size in bytes. A value of 0 disables the buffer. [default: 1024])"
+      -b, --buffer SIZE  Output buffer size in bytes. A value of 0 disables the buffer. [default: 512])"
 };
 
 int main(int argc, const char* argv[])
