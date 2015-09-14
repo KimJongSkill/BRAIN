@@ -28,7 +28,7 @@ void ProgramData::Parse(const std::string& Source)
 			*Text.back().Data += x;
 
 			// Remove instructions that have no effect
-			if (!Text.back().Data)
+			if (!Text.back().Data[0])
 				Text.pop_back();
 		}
 		else if (Text.back() == Instruction::Type::Reset
