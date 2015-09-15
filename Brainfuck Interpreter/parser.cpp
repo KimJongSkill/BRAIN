@@ -9,10 +9,10 @@ void ProgramData::Parse(const std::string& Source)
 	{
 		if (Text.back() == Instruction::Type::MovePointer)
 		{
-			*Text.back().Data += x;
+			Text.back().Value += x;
 
 			// Remove instructions that have no effect
-			if (!*Text.back().Data)
+			if (!Text.back().Value)
 				Text.pop_back();
 		}
 		else
@@ -25,15 +25,15 @@ void ProgramData::Parse(const std::string& Source)
 	{
 		if (Text.back() == Instruction::Type::Addition)
 		{
-			*Text.back().Data += x;
+			Text.back().Value += x;
 
 			// Remove instructions that have no effect
-			if (!Text.back().Data[0])
+			if (!Text.back().Value)
 				Text.pop_back();
 		}
 		else if (Text.back() == Instruction::Type::Reset
-			&& Text.back().Data[0] == 1
-			&& Text.back().Data[1] == 0)
+			&& Text.back().Value == 1
+			&& Text.back().Offset == 0)
 		{
 			Text.pop_back();
 
@@ -41,7 +41,7 @@ void ProgramData::Parse(const std::string& Source)
 		}
 		else if (Text.back() == Instruction::Type::Set)
 		{
-			*Text.back().Data += x;
+			Text.back().Value += x;
 		}
 		else
 		{

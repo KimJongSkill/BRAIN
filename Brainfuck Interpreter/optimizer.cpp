@@ -16,7 +16,7 @@ bool ProgramData::AttemptReset(Instruction* Begin, Instruction* End)
 		Text.pop_back();
 		JumpTable.pop();
 
-		if (Text.back() == Instruction::Type::Reset && !Text.back().Data[1])
+		if (Text.back() == Instruction::Type::Reset && !Text.back().Offset)
 			return true;
 
 		// Detect "[-]>[-]"
@@ -28,12 +28,12 @@ bool ProgramData::AttemptReset(Instruction* Begin, Instruction* End)
 			*	is clearing a range, which allows us to combine the instructions.
 			*	If not, we can always combine the MovePointer with the Reset instruction.
 			*/
-			auto MoveAmount = std::abs(*Text.back().Data);
+			auto MoveAmount = std::abs(Text.back().Value);
 
 			if (MoveAmount == 1)
-				std::prev(std::end(Text), 2)->Data[0] += *Text.back().Data;
+				std::prev(std::end(Text), 2)->Value += Text.back().Value;
 
-			std::prev(std::end(Text), 2)->Data[1] += *Text.back().Data;
+			std::prev(std::end(Text), 2)->Offset += Text.back().Value;
 
 			Text.pop_back();
 
@@ -58,7 +58,7 @@ bool ProgramData::AttemptSeek(Instruction* Begin, Instruction* End)
 		&& *Begin == Instruction::Type::LoopStart
 		&& *std::next(Begin) == Instruction::Type::MovePointer)
 	{
-		auto Data = *Text.back().Data;
+		auto Data = Text.back().Value;
 
 		Text.pop_back();
 		Text.pop_back();
@@ -109,22 +109,22 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 			switch (Iterator->Command)
 			{
 			case Instruction::Type::MovePointer:
-				CurrentOffset += *Iterator->Data;
+				CurrentOffset += Iterator->Value;
 				break;
 			case Instruction::Type::Addition:
 				if (!CurrentOffset)
 				{
-					Cell0Total += *Iterator->Data;
+					Cell0Total += Iterator->Value;
 				}
 				else
 				{
-					Operations.emplace_back(Instruction::Type::Multiplication, CurrentOffset - LastOffset, *Iterator->Data);
+					Operations.emplace_back(Instruction::Type::Multiplication, Iterator->Value, CurrentOffset - LastOffset);
 
 					LastOffset = CurrentOffset;
 				}
 				break;
 			case Instruction::Type::Multiplication:
-				CurrentOffset += Iterator->Data[0];
+				CurrentOffset += Iterator->Offset;
 
 				if (!CurrentOffset)
 				{
@@ -133,7 +133,7 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 				}
 				else
 				{
-					Operations.emplace_back(Instruction::Type::Multiplication, CurrentOffset - LastOffset, Iterator->Data[1]);
+					Operations.emplace_back(Instruction::Type::Multiplication, Iterator->Value, CurrentOffset - LastOffset);
 
 					LastOffset = CurrentOffset;
 				}

@@ -25,7 +25,7 @@ public:
 	void(*FunctionPointer)(Instruction*);
 	union
 	{
-		value_type Data[2];
+		struct { value_type Value, Offset; };
 		Instruction* Pointer;
 	};
 

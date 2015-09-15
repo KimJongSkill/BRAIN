@@ -1,7 +1,7 @@
 #include "program.hpp"
 
 Instruction::Instruction(Type x, Instruction* y) : Command(x), Pointer(y), FunctionPointer(FunctionPointers[Command]) { }
-Instruction::Instruction(Type x, value_type y, value_type z) : Command(x), Data{ y, z }, FunctionPointer(FunctionPointers[Command]) { }
+Instruction::Instruction(Type x, value_type y, value_type z) : Command(x), Value(y), Offset(z), FunctionPointer(FunctionPointers[Command]) { }
 
 ProgramData* Instruction::Parent = nullptr;
 
