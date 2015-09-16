@@ -52,20 +52,23 @@ int main(int argc, const char* argv[])
 		ExecutionComplete = std::chrono::steady_clock::now();
 
 		if (Arguments["--time"].asBool())
-			std::cout << "\nParsing finished in "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(ParsingComplete - Start).count()
-			<< " ms\n"
-			<< "Program execution finished in "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(ExecutionComplete - Start).count()
-			<< " ms\n";
+		{
+			io::LogMessage('\n', false);
+			io::Log << "Parsing finished in "
+				<< std::chrono::duration_cast<std::chrono::milliseconds>(ParsingComplete - Start).count()
+				<< " ms\n";
+			io::Log << "Program execution finished in "
+				<< std::chrono::duration_cast<std::chrono::milliseconds>(ExecutionComplete - Start).count()
+				<< " ms\n";
+		}
 	}
 	catch (const std::ios::failure&)
 	{
-		std::cerr << "Unable to open file\n";
+		io::LogMessage("Unable to open file\n");
 	}
 	catch (const std::exception& Exception)
 	{
-		std::cout << Exception.what() << std::endl;
+		io::LogMessage(Exception.what() + '\n');
 
 		return EXIT_FAILURE;
 	}

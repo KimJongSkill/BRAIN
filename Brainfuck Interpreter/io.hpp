@@ -27,4 +27,27 @@ namespace io
 	private:
 		Memory::cell_type* BufferPointer;
 	};
+
+	struct MessageLog
+	{
+		bool Flag;
+	} constexpr Log{ true };
+
+	template <class Type>
+	constexpr void LogMessage(const Type& Message, bool Format = true)
+	{
+		if (Format)
+			std::clog << "[BRAIN] ";
+
+		std::clog << Message;
+	}
+
+	template <class Type>
+	const MessageLog operator<<(const MessageLog& Object, const Type& Message)
+	{
+		LogMessage(Message, Object.Flag);
+		
+		constexpr MessageLog Temp{ false };
+		return Temp;
+	}
 }
