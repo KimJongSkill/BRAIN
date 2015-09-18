@@ -89,12 +89,5 @@ void ProgramData::Parse(const std::string& Source)
 		}
 	}
 
-	/*
-	*	Ensure that we do not jump out of bounds
-	*	if the program ends with a ']'
-	*/
-	Text.emplace_back(Instruction::Type::Stop);
-	InstructionPointer = &Text.front();
-
 	Link();
 }

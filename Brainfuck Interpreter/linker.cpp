@@ -26,4 +26,11 @@ void ProgramData::Link()
 
 	if (!JumpTable.empty())
 		throw std::runtime_error("Unmatched '['");
+
+	/*
+	*	Ensure that we do not jump out of bounds
+	*	if the program ends with a ']'
+	*/
+	Text.emplace_back(Instruction::Type::Stop);
+	InstructionPointer = &Text.front();
 }
