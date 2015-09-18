@@ -2,9 +2,6 @@
 
 void ProgramData::Parse(const std::string& Source)
 {
-	// Dirty way to make sure our pointers do not get invalidated later on
-	Text.reserve(std::size(Source));
-	
 	auto MovePointerLambda = [&](Instruction::value_type x)
 	{
 		if (Text.back() == Instruction::Type::MovePointer)
