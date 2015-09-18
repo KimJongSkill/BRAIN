@@ -73,37 +73,24 @@ void ProgramData::Parse(const std::string& Source)
 			break;
 		case '[':
 			Text.emplace_back(Instruction::Type::LoopStart);
-			JumpTable.push(&Text.back());
 			break;
 		case ']':
-			if (JumpTable.size() > 0)
-			{
-				Instruction* const BeginPointer = JumpTable.top();
-				Instruction* const EndPointer = std::data(Text) + std::size(Text);
+			Instruction* const BeginPointer = &*std::find(std::rbegin(Text), std::rend(Text), Instruction::Type::LoopStart);
+			Instruction* const EndPointer = std::data(Text) + std::size(Text);
 
-				if (DropEmptyLoop(BeginPointer, EndPointer))
-					break;
-				if (AttemptReset(BeginPointer, EndPointer))
-					break;
-				if (AttemptSeek(BeginPointer, EndPointer))
-					break;
-				if (AttemptMultiplication(BeginPointer, EndPointer))
-					break;
+			if (DropEmptyLoop(BeginPointer, EndPointer))
+				break;
+			if (AttemptReset(BeginPointer, EndPointer))
+				break;
+			if (AttemptSeek(BeginPointer, EndPointer))
+				break;
+			if (AttemptMultiplication(BeginPointer, EndPointer))
+				break;
 
-				Text.emplace_back(Instruction::Type::LoopEnd, std::next(BeginPointer));
-				JumpTable.top()->Pointer = EndPointer;
-				JumpTable.pop();
-			}
-			else
-			{
-				throw std::runtime_error("Unbalanced ']'");
-			}
+			Text.emplace_back(Instruction::Type::LoopEnd);
 			break;
 		}
 	}
-
-	if (!JumpTable.empty())
-		throw std::runtime_error("Unbalanced '['");
 
 	/*
 	*	Ensure that we do not jump out of bounds
@@ -111,4 +98,6 @@ void ProgramData::Parse(const std::string& Source)
 	*/
 	Text.emplace_back(Instruction::Type::Stop);
 	InstructionPointer = &Text.front();
+
+	Link();
 }

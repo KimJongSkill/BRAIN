@@ -3,7 +3,6 @@
 #include "memory.hpp"
 
 #include <vector>
-#include <stack>
 
 class Instruction
 {
@@ -45,11 +44,11 @@ public:
 
 	void Run();
 	void Parse(const std::string& Source);
+	void Link();
 
 	std::vector<Instruction>::pointer InstructionPointer;
 	Memory::iterator DataPointer;
-
-	std::stack<Instruction*> JumpTable;
+	
 	std::vector<Memory::cell_type> Storage;
 	char FastStorage;
 
