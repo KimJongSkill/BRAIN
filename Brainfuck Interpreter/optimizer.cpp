@@ -202,3 +202,8 @@ bool ProgramData::DropEmptyLoop(Instruction* Begin, Instruction* End)
 
 	return false;
 }
+
+void ProgramData::DropPopFast()
+{
+	Text.erase(std::remove(std::begin(Text), std::end(Text), Instruction::Type::PopFast), std::end(Text));
+}
