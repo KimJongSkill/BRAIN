@@ -20,8 +20,11 @@ public:
 	static void SetParent(ProgramData*);
 	static void Orphan(ProgramData*);
 
-	Type Command;
-	void(*FunctionPointer)(Instruction*);
+	union
+	{
+		Type Command;
+		void(*FunctionPointer)(Instruction*);
+	};
 	union
 	{
 		struct { value_type Value, Offset; };
@@ -45,6 +48,8 @@ public:
 	void Run();
 	void Parse(const std::string& Source);
 	void Link();
+	void LinkJumps();
+	void LinkFunctions();
 
 	std::vector<Instruction>::pointer InstructionPointer;
 	Memory::iterator DataPointer;

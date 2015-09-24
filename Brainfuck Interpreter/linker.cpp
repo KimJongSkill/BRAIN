@@ -4,6 +4,30 @@
 
 void ProgramData::Link()
 {
+	/*
+	*	Make sure no relocation happens when 
+	*	we push Instruction::Type::Stop
+	*/
+	Text.reserve(Text.size() + 1);
+
+	LinkJumps();
+	LinkFunctions();
+
+	InstructionPointer = &Text.front();
+
+	/*
+	*	Ensure that we do not jump out of bounds
+	*	if the program ends with a ']'.
+	*	It is intentionally inserted after
+	*	the call to LinkFunctions() so the
+	*	Command variable won't get overwritten
+	*	by the FunctionPointer.
+	*/
+	Text.emplace_back(Instruction::Type::Stop);
+}
+
+void ProgramData::LinkJumps()
+{
 	std::stack<Instruction*> JumpTable;
 
 	for (auto Pointer = std::data(Text); Pointer != std::data(Text) + std::size(Text); ++Pointer)
@@ -26,11 +50,13 @@ void ProgramData::Link()
 
 	if (!JumpTable.empty())
 		throw std::runtime_error("Unmatched '['");
+}
 
-	/*
-	*	Ensure that we do not jump out of bounds
-	*	if the program ends with a ']'
-	*/
-	Text.emplace_back(Instruction::Type::Stop);
-	InstructionPointer = &Text.front();
+void ProgramData::LinkFunctions()
+{
+	for (auto& Item : Text)
+	{
+		auto Temp = Item.Command;
+		Item.FunctionPointer = Instruction::FunctionPointers[Temp];
+	}
 }
