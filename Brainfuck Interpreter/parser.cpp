@@ -89,5 +89,7 @@ void ProgramData::Parse(const std::string& Source)
 		}
 	}
 
+	DropPopFast();
+
 	Link();
 }

@@ -57,6 +57,7 @@ private:
 	bool AttemptSeek(Instruction* Begin, Instruction* End);
 	bool AttemptMultiplication(Instruction* Begin, Instruction* End);
 	bool DropEmptyLoop(Instruction* Begin, Instruction* End);
+	void DropPopFast();
 };
 
 inline bool operator==(Instruction::Type x, const Instruction& y);
