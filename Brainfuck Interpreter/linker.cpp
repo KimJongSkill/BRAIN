@@ -55,8 +55,5 @@ void ProgramData::LinkJumps()
 void ProgramData::LinkFunctions()
 {
 	for (auto& Item : Text)
-	{
-		auto Temp = Item.Command;
-		Item.FunctionPointer = Instruction::FunctionPointers[Temp];
-	}
+		Item.FunctionPointer = Instruction::FunctionPointers[Item.Command];
 }
