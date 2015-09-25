@@ -14,7 +14,6 @@ bool ProgramData::AttemptReset(Instruction* Begin, Instruction* End)
 	{
 		Text.pop_back();
 		Text.pop_back();
-		JumpTable.pop();
 
 		if (Text.back() == Instruction::Type::Reset && !Text.back().Offset)
 			return true;
@@ -62,7 +61,6 @@ bool ProgramData::AttemptSeek(Instruction* Begin, Instruction* End)
 
 		Text.pop_back();
 		Text.pop_back();
-		JumpTable.pop();
 
 		Text.emplace_back(Instruction::Type::Seek, Data);
 
@@ -177,8 +175,6 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 			while (Begin <= &Text.back())
 				Text.pop_back();
 
-			JumpTable.pop();
-
 			Text.emplace_back(IsLeafLoop ? Instruction::Type::PushFast : Instruction::Type::Push);
 			
 			for (auto Operation : Operations)
@@ -200,10 +196,14 @@ bool ProgramData::DropEmptyLoop(Instruction* Begin, Instruction* End)
 	if (std::distance(Begin, End) == 1)
 	{
 		Text.pop_back();
-		JumpTable.pop();
-
+		
 		return true;
 	}
 
 	return false;
+}
+
+void ProgramData::DropPopFast()
+{
+	Text.erase(std::remove(std::begin(Text), std::end(Text), Instruction::Type::PopFast), std::end(Text));
 }

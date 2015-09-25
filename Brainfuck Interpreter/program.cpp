@@ -1,7 +1,7 @@
 #include "program.hpp"
 
-Instruction::Instruction(Type x, Instruction* y) : Command(x), Pointer(y), FunctionPointer(FunctionPointers[Command]) { }
-Instruction::Instruction(Type x, value_type y, value_type z) : Command(x), Value(y), Offset(z), FunctionPointer(FunctionPointers[Command]) { }
+Instruction::Instruction(Type x, Instruction* y) : Command(x), Pointer(y) { }
+Instruction::Instruction(Type x, value_type y, value_type z) : Command(x), Value(y), Offset(z) { }
 
 ProgramData* Instruction::Parent = nullptr;
 
@@ -35,6 +35,14 @@ ProgramData::~ProgramData()
 	Instruction::Orphan(this);
 }
 
+ProgramData& ProgramData::From(const std::string& Source)
+{
+	Parse(Source);
+	DropPopFast();
+	Link();
+
+	return *this;
+}
 
 bool Instruction::operator==(Type y) const
 {

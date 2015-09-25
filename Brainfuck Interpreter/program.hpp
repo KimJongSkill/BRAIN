@@ -3,7 +3,6 @@
 #include "memory.hpp"
 
 #include <vector>
-#include <stack>
 
 class Instruction
 {
@@ -21,8 +20,11 @@ public:
 	static void SetParent(ProgramData*);
 	static void Orphan(ProgramData*);
 
-	Type Command;
-	void(*FunctionPointer)(Instruction*);
+	union
+	{
+		Type Command;
+		void(*FunctionPointer)(Instruction*);
+	};
 	union
 	{
 		struct { value_type Value, Offset; };
@@ -44,20 +46,25 @@ public:
 	~ProgramData();
 
 	void Run();
-	void Parse(const std::string& Source);
+	ProgramData& From(const std::string& Source);
 
 	std::vector<Instruction>::pointer InstructionPointer;
 	Memory::iterator DataPointer;
-
-	std::stack<Instruction*> JumpTable;
+	
 	std::vector<Memory::cell_type> Storage;
 	char FastStorage;
 
 private:
+	void Parse(const std::string&);
+	void Link();
+	void LinkJumps();
+	void LinkFunctions();
+
 	bool AttemptReset(Instruction* Begin, Instruction* End);
 	bool AttemptSeek(Instruction* Begin, Instruction* End);
 	bool AttemptMultiplication(Instruction* Begin, Instruction* End);
 	bool DropEmptyLoop(Instruction* Begin, Instruction* End);
+	void DropPopFast();
 };
 
 inline bool operator==(Instruction::Type x, const Instruction& y);

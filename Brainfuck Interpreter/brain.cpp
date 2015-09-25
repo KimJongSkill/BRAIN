@@ -45,7 +45,7 @@ int main(int argc, const char* argv[])
 		std::chrono::steady_clock::time_point ParsingComplete;
 		std::chrono::steady_clock::time_point ExecutionComplete;
 
-		Program.Parse(Source);
+		Program.From(Source);
 		ParsingComplete = std::chrono::steady_clock::now();
 
 		Program.Run();
