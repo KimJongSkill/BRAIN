@@ -35,6 +35,14 @@ ProgramData::~ProgramData()
 	Instruction::Orphan(this);
 }
 
+ProgramData& ProgramData::From(const std::string& Source)
+{
+	Parse(Source);
+	DropPopFast();
+	Link();
+
+	return *this;
+}
 
 bool Instruction::operator==(Type y) const
 {

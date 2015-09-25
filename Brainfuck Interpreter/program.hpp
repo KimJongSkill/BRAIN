@@ -46,10 +46,7 @@ public:
 	~ProgramData();
 
 	void Run();
-	void Parse(const std::string& Source);
-	void Link();
-	void LinkJumps();
-	void LinkFunctions();
+	ProgramData& From(const std::string& Source);
 
 	std::vector<Instruction>::pointer InstructionPointer;
 	Memory::iterator DataPointer;
@@ -58,6 +55,11 @@ public:
 	char FastStorage;
 
 private:
+	void Parse(const std::string&);
+	void Link();
+	void LinkJumps();
+	void LinkFunctions();
+
 	bool AttemptReset(Instruction* Begin, Instruction* End);
 	bool AttemptSeek(Instruction* Begin, Instruction* End);
 	bool AttemptMultiplication(Instruction* Begin, Instruction* End);
