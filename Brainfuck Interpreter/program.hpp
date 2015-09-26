@@ -33,7 +33,7 @@ public:
 
 	static ProgramData* Parent;
 
-	static const std::array<void(*)(Instruction*), 16> FunctionPointers;
+	static const std::array<void(*)(Instruction*), Type::Stop + 1> FunctionPointers;
 };
 
 class ProgramData
