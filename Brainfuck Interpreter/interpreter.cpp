@@ -33,6 +33,9 @@ const std::array<void(*)(Instruction*), 16> Instruction::FunctionPointers
 
 void ProgramData::Run()
 {
+	if (Text.empty())
+		return;
+
 	while (InstructionPointer->Command != Instruction::Type::Stop)
 	{
 		auto Temp = InstructionPointer++;
