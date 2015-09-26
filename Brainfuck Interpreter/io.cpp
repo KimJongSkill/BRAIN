@@ -41,7 +41,7 @@ namespace io
 		}
 		catch (const std::bad_alloc&)
 		{
-			std::cerr << "Unable to allocate output buffer\n";
+			io::LogMessage("Unable to allocate output buffer\n");
 		}
 	}
 
