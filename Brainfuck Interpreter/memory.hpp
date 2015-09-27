@@ -38,7 +38,7 @@ public:
 	reference operator[](difference_type) const;
 
 private:
-	static void Advance(Memory_iterator&, const std::ptrdiff_t);
+	void Advance(const std::ptrdiff_t);
 
 	difference_type Index;
 	pointer Pointer;

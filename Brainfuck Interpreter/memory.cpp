@@ -25,7 +25,7 @@ auto Memory_iterator::operator->() const -> pointer
 
 Memory_iterator& Memory_iterator::operator++()
 {
-	Advance(*this, 1);
+	Advance(1);
 
 	return *this;
 }
@@ -39,7 +39,7 @@ Memory_iterator Memory_iterator::operator++(int)
 
 Memory_iterator& Memory_iterator::operator--()
 {
-	Advance(*this, -1);
+	Advance(-1);
 
 	return *this;
 }
@@ -60,7 +60,7 @@ Memory_iterator Memory_iterator::operator+(difference_type Delta) const
 {
 	Memory_iterator New(*this);
 
-	Advance(New, Delta);
+	New.Advance(Delta);
 
 	return New;
 }
@@ -92,7 +92,7 @@ bool Memory_iterator::operator>=(const Memory_iterator& Other) const
 
 Memory_iterator& Memory_iterator::operator+=(difference_type Delta)
 {
-	Advance(*this, Delta);
+	Advance(Delta);
 
 	return *this;
 }
@@ -107,10 +107,10 @@ auto Memory_iterator::operator[](difference_type Offset) const -> reference
 	return *(*this + Offset);
 }
 
-void Memory_iterator::Advance(Memory_iterator& Target, const std::ptrdiff_t Delta)
+void Memory_iterator::Advance(const std::ptrdiff_t Delta)
 {
 	constexpr std::ptrdiff_t Flag = ~std::ptrdiff_t(0xff); // 0xff...ff00 
-	const std::ptrdiff_t NewIndex = Target.Index + Delta;
+	const std::ptrdiff_t NewIndex = Index + Delta;
 
 	/*
 	*	Check if the iterator has not moved to another page.
@@ -119,16 +119,16 @@ void Memory_iterator::Advance(Memory_iterator& Target, const std::ptrdiff_t Delt
 	*	the other bytes store the index of the page within
 	*	the list.
 	*/
-	if ((Target.Index & Flag) == (NewIndex & Flag))
-		std::advance(Target.Pointer, Delta);
-	else if (NewIndex > Target.Parent->Limits.second)
-		Target.Pointer = Target.Parent->RequestNewPage(Memory::Back);
-	else if (NewIndex < Target.Parent->Limits.first)
-		Target.Pointer = Target.Parent->RequestNewPage(Memory::Front);
+	if ((Index & Flag) == (NewIndex & Flag))
+		std::advance(Pointer, Delta);
+	else if (NewIndex > Parent->Limits.second)
+		Pointer = Parent->RequestNewPage(Memory::Back);
+	else if (NewIndex < Parent->Limits.first)
+		Pointer = Parent->RequestNewPage(Memory::Front);
 	else
-		Target.Pointer = std::next(std::next(Target.Parent->Origin, NewIndex >> 8)->data(), NewIndex & 0xff);
+		Pointer = std::next(std::next(Parent->Origin, NewIndex >> 8)->data(), NewIndex & 0xff);
 
-	Target.Index = NewIndex;
+	Index = NewIndex;
 }
 
 auto Memory::begin() const -> iterator
