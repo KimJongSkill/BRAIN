@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <chrono>
-#include <array>
 
 const std::string Documentation
 {

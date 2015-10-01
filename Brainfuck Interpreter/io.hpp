@@ -2,7 +2,6 @@
 
 #include "memory.hpp"
 
-#include <cstdint>
 #include <string>
 
 namespace io
