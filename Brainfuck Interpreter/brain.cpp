@@ -10,20 +10,20 @@ const std::string Documentation
 R"(BRAIN - Brainfuck Interpreter
 
     Usage:
-      brain [--time] [--buffer SIZE] (--execute SOURCE | FILE)
+      brain [--time] [--buffer SIZE] [--input STRING] (--execute SOURCE | FILE)
       brain [--help]
 
     Options:
       -h, --help         Display this help message.
       -t, --time         Display parsing and execution time.
       -e, --execute      Execute provided SOURCE instead of reading from FILE.
-      -b, --buffer SIZE  Set Output Buffer size in bytes. A value of 0 disables the buffer. [default: 512])"
+      -b, --buffer SIZE  Set Output Buffer size in bytes. A value of 0 disables the buffer. [default: 512]
+      -i, --input INPUT  INPUT is provided as program input before resorting to standard input.)"
 };
 
 int main(int argc, const char* argv[])
 {
 	std::string Source;
-	ProgramData Program;
 
 	if (argc < 2)
 	{
@@ -39,6 +39,8 @@ int main(int argc, const char* argv[])
 		Source = Arguments["--execute"].asBool() ? Arguments["SOURCE"].asString() : io::Open(Arguments["FILE"].asString());
 
 		io::OutputBuffer Buffer(std::stoll(Arguments["--buffer"].asString()));
+		io::ProgramInput Input(Arguments["--input"].isString() ? Arguments["--input"].asString() : "");
+		ProgramData Program(Input);
 
 		std::chrono::steady_clock::time_point Start = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point ParsingComplete;

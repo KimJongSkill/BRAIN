@@ -1,6 +1,7 @@
 #pragma once
 
 #include "memory.hpp"
+#include "io.hpp"
 
 #include <vector>
 
@@ -17,7 +18,7 @@ public:
 
 	bool operator==(Type) const;
 
-	static void SetParent(ProgramData*);
+	static void SetParent(ProgramData*, io::ProgramInput* const);
 	static void Orphan(ProgramData*);
 
 	union
@@ -32,6 +33,7 @@ public:
 	};
 
 	static ProgramData* Parent;
+	static io::ProgramInput* InputQueue;
 
 	static const std::array<void(*)(Instruction*), Type::Stop + 1> FunctionPointers;
 };
@@ -42,7 +44,7 @@ class ProgramData
 	Memory Cells;
 
 public:
-	ProgramData();
+	explicit ProgramData(io::ProgramInput&);
 	~ProgramData();
 
 	void Run();

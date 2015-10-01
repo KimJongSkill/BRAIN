@@ -11,11 +11,6 @@ namespace io
 		std::cout.put(Character);
 	}
 
-	Memory::cell_type InputByte()
-	{
-		return std::cin.get();
-	}
-
 	std::string Open(const std::string& Path)
 	{
 		std::stringstream Stream;
@@ -57,5 +52,15 @@ namespace io
 	void OutputBuffer::Flush()
 	{
 		std::cout.flush();
+	}
+
+	ProgramInput::ProgramInput(std::string Injection) : InjectedData(std::move(Injection) + '\n') { }
+	
+	Memory::cell_type ProgramInput::GetByte()
+	{
+		if (Index < InjectedData.length())
+			return InjectedData[Index++];
+		else
+			return std::cin.get();
 	}
 }

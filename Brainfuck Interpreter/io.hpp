@@ -8,8 +8,6 @@ namespace io
 {
 	void OutputByte(const Memory::cell_type);
 
-	Memory::cell_type InputByte();
-
 	std::string Open(const std::string&);
 
 	class OutputBuffer
@@ -49,4 +47,18 @@ namespace io
 		constexpr MessageLog Temp{ false };
 		return Temp;
 	}
+
+	class ProgramInput
+	{
+	public:
+		ProgramInput() = default;
+		ProgramInput(std::string);
+		~ProgramInput() = default;
+
+		Memory::cell_type GetByte();
+
+	private:
+		const std::string InjectedData;
+		std::string::size_type Index = 0;
+	};
 }
