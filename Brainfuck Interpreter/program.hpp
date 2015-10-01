@@ -18,13 +18,13 @@ public:
 
 	bool operator==(Type) const;
 
-	static void SetParent(ProgramData*, io::ProgramInput* const);
-	static void Orphan(ProgramData*);
+	static void SetParent(ProgramData* const, io::ProgramInput* const);
+	static void Orphan(const ProgramData* const);
 
 	union
 	{
 		Type Command;
-		void(*FunctionPointer)(Instruction*);
+		void(*FunctionPointer)(Instruction* const);
 	};
 	union
 	{
@@ -35,7 +35,7 @@ public:
 	static ProgramData* Parent;
 	static io::ProgramInput* InputQueue;
 
-	static const std::array<void(*)(Instruction*), Type::Stop + 1> FunctionPointers;
+	static const std::array<void(*)(Instruction* const), Type::Stop + 1> FunctionPointers;
 };
 
 class ProgramData

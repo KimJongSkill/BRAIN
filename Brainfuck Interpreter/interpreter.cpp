@@ -4,7 +4,7 @@
 #include <iterator>
 #include <numeric>
 
-const std::array<void(*)(Instruction*), Instruction::Type::Stop + 1> Instruction::FunctionPointers
+const std::array<void(*)(Instruction* const), Instruction::Type::Stop + 1> Instruction::FunctionPointers
 {
 	[](Instruction* x) {},
 	[](Instruction* x) { std::advance(Parent->DataPointer, x->Value); },
