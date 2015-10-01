@@ -54,17 +54,3 @@ bool Instruction::operator==(Type y) const
 {
 	return Command == y;
 }
-
-bool operator==(Instruction::Type x, const Instruction& y)
-{
-	return y == x;
-}
-
-bool operator!=(const Instruction& x, Instruction::Type y)
-{
-	return !(x == y);
-}
-bool operator!=(Instruction::Type x, const Instruction& y)
-{
-	return y != x;
-}

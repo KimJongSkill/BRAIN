@@ -68,7 +68,3 @@ private:
 	bool DropEmptyLoop(Instruction* Begin, Instruction* End);
 	void DropPopFast();
 };
-
-inline bool operator==(Instruction::Type x, const Instruction& y);
-inline bool operator!=(const Instruction& x, Instruction::Type y);
-inline bool operator!=(Instruction::Type x, const Instruction& y);
