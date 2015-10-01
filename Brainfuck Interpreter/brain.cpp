@@ -39,7 +39,7 @@ int main(int argc, const char* argv[])
 		Source = Arguments["--execute"].asBool() ? Arguments["SOURCE"].asString() : io::Open(Arguments["FILE"].asString());
 
 		io::OutputBuffer Buffer(std::stoll(Arguments["--buffer"].asString()));
-		io::ProgramInput Input(Arguments["--input"].isString() ? Arguments["--input"].asString() : "");
+		io::ProgramInput Input(Arguments["--input"].isString() ? Arguments["--input"].asString() : "", Buffer);
 		ProgramData Program(Input);
 
 		std::chrono::steady_clock::time_point Start = std::chrono::steady_clock::now();

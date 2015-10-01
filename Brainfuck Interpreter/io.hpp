@@ -52,7 +52,7 @@ namespace io
 	{
 	public:
 		ProgramInput() = default;
-		ProgramInput(std::string);
+		ProgramInput(std::string, OutputBuffer&);
 		~ProgramInput() = default;
 
 		Memory::cell_type GetByte();
@@ -60,5 +60,6 @@ namespace io
 	private:
 		const std::string InjectedData;
 		std::string::size_type Index = 0;
+		OutputBuffer& Buffer;
 	};
 }

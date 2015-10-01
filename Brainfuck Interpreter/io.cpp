@@ -54,13 +54,22 @@ namespace io
 		std::cout.flush();
 	}
 
-	ProgramInput::ProgramInput(std::string Injection) : InjectedData(std::move(Injection) + '\n') { }
-	
+	ProgramInput::ProgramInput(std::string Injection, OutputBuffer& BufferRef) : InjectedData(std::move(Injection) + '\n'), Buffer(BufferRef) { }
+
 	Memory::cell_type ProgramInput::GetByte()
 	{
 		if (Index < InjectedData.length())
-			return InjectedData[Index++];
+		{
+			auto Char = InjectedData[Index++];
+
+			OutputByte(Char);
+			Buffer.Flush();
+
+			return Char;
+		}
 		else
+		{
 			return std::cin.get();
+		}
 	}
 }
