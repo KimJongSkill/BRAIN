@@ -156,8 +156,6 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 				InsertMovePointer();
 				Operations.emplace_back(Instruction::Type::Pop);
 				break;
-			default:
-				throw std::runtime_error("This shouldn't have happened. Probably a missing clause in the switch.");
 			}
 		}
 
