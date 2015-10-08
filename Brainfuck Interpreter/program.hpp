@@ -54,7 +54,7 @@ public:
 	Memory::iterator DataPointer;
 	
 	std::vector<Memory::cell_type> Storage;
-	char FastStorage;
+	Memory::cell_type FastStorage;
 
 private:
 	void Parse(const std::string&);
