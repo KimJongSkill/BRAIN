@@ -12,8 +12,7 @@ bool ProgramData::AttemptReset(Instruction* Begin, Instruction* End)
 		&& *Begin == Instruction::Type::LoopStart
 		&& *std::next(Begin) == Instruction::Type::Addition)
 	{
-		Text.pop_back();
-		Text.pop_back();
+		Text.erase(Text.end() - 2, Text.end());
 
 		if (Text.back() == Instruction::Type::Reset && !Text.back().Offset)
 			return true;
@@ -59,8 +58,7 @@ bool ProgramData::AttemptSeek(Instruction* Begin, Instruction* End)
 	{
 		auto Data = Text.back().Value;
 
-		Text.pop_back();
-		Text.pop_back();
+		Text.erase(Text.end() - 2, Text.end());
 
 		Text.emplace_back(Instruction::Type::Seek, Data);
 
