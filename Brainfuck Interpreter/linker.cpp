@@ -13,7 +13,7 @@ void ProgramData::Link()
 	LinkJumps();
 	LinkFunctions();
 
-	InstructionPointer = &Text.front();
+	InstructionPointer = Text.data();
 
 	/*
 	*	Ensure that we do not jump out of bounds
