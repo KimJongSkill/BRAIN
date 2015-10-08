@@ -163,13 +163,7 @@ bool ProgramData::AttemptMultiplication(Instruction* Begin, Instruction* End)
 		*/
 		if (!CurrentOffset && Cell0Total == -1)
 		{
-			/*
-			*	We cannot use std::vector::erase because
-			*	we have a pointer, not an iterator, so
-			*	we have to remove the elements one at a time
-			*/
-			while (Begin <= &Text.back())
-				Text.pop_back();
+			Text.erase(Text.begin() + std::distance(Text.data(), Begin), Text.end());
 
 			Text.emplace_back(IsLeafLoop ? Instruction::Type::PushFast : Instruction::Type::Push);
 			
