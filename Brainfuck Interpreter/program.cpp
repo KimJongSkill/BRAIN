@@ -6,17 +6,19 @@ Instruction::Instruction(Type x, value_type y, value_type z) : Command(x), Value
 ProgramData* Instruction::Parent = nullptr;
 io::ProgramInput* Instruction::InputQueue = nullptr;
 
+template <class Type>
+static void ReplaceIfNull(Type*& Pointer, Type* const New)
+{
+	if (Pointer != nullptr)
+		throw std::logic_error("Attempted to replace an already valid pointer");
+
+	Pointer = New;
+}
+
 void Instruction::SetParent(ProgramData* const Adopter, io::ProgramInput* const InputPtr)
 {
-	if (Parent == nullptr)
-		Parent = Adopter;
-	else
-		throw std::logic_error("Instruction class already has a parent");
-
-	if (InputQueue == nullptr)
-		InputQueue = InputPtr;
-	else
-		throw std::logic_error("Instruction class already has an input queue");		
+	ReplaceIfNull(Parent, Adopter);
+	ReplaceIfNull(InputQueue, InputPtr);
 }
 
 void Instruction::Orphan(const ProgramData* const Adopter)
