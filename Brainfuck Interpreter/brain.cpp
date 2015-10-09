@@ -42,16 +42,14 @@ int main(int argc, const char* argv[])
 		io::ProgramInput Input(Arguments["--input"].isString() ? Arguments["--input"].asString() : "", Buffer);
 		ProgramData Program(Input);
 
-		std::chrono::steady_clock::time_point Start = std::chrono::steady_clock::now();
-		std::chrono::steady_clock::time_point ParsingComplete;
-		std::chrono::steady_clock::time_point ExecutionComplete;
+		auto Start = std::chrono::steady_clock::now();
 
 		Program.From(Source);
-		ParsingComplete = std::chrono::steady_clock::now();
+		auto ParsingComplete = std::chrono::steady_clock::now();
 
 		Program.Run();
-		ExecutionComplete = std::chrono::steady_clock::now();
-
+		auto ExecutionComplete = std::chrono::steady_clock::now();
+		
 		if (Arguments["--time"].asBool())
 		{
 			io::LogMessage('\n', false);
