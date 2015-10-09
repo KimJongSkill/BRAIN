@@ -5,7 +5,7 @@
 void ProgramData::Link()
 {
 	/*
-	*	Make sure no relocation happens when 
+	*	Make sure no reallocations happen when 
 	*	we push Instruction::Type::Stop
 	*/
 	Text.reserve(Text.size() + 1);
