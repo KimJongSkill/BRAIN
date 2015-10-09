@@ -42,7 +42,7 @@ namespace io
 
 	OutputBuffer::~OutputBuffer()
 	{
-		if (BufferPointer)
+		if (BufferPointer != nullptr)
 		{
 			Flush();
 			delete[] BufferPointer;
