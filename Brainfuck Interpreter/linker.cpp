@@ -39,7 +39,7 @@ void ProgramData::LinkJumps()
 		else if (*Pointer == Instruction::Type::LoopEnd)
 		{
 			if (JumpTable.empty())
-				throw std::runtime_error("Umatched ']'");
+				throw std::runtime_error("Unmatched ']'");
 
 			Pointer->Pointer = std::next(JumpTable.top());
 			JumpTable.top()->Pointer = std::next(Pointer);
