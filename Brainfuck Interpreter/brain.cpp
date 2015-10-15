@@ -36,10 +36,10 @@ int main(int argc, const char* argv[])
 	{
 		auto Arguments = docopt::docopt(Documentation, { std::next(argv), std::next(argv, argc) }, true);
 
-		Source = Arguments["--execute"].asBool() ? Arguments["SOURCE"].asString() : io::Open(Arguments["FILE"].asString());
+		Source = Arguments["--execute"].asBool() ? Arguments["SOURCE"].asString() : bf::io::Open(Arguments["FILE"].asString());
 
-		io::OutputBuffer Buffer(std::stoll(Arguments["--buffer"].asString()));
-		io::ProgramInput Input(Arguments["--input"].isString() ? Arguments["--input"].asString() : "", Buffer);
+		bf::io::OutputBuffer Buffer(std::stoll(Arguments["--buffer"].asString()));
+		bf::io::ProgramInput Input(Arguments["--input"].isString() ? Arguments["--input"].asString() : "", Buffer);
 		ProgramData Program(Input);
 
 		auto Start = std::chrono::steady_clock::now();
@@ -52,22 +52,22 @@ int main(int argc, const char* argv[])
 		
 		if (Arguments["--time"].asBool())
 		{
-			io::LogMessage('\n', false);
-			io::Log << "Parsing finished in "
+			bf::io::LogMessage('\n', false);
+			bf::io::Log << "Parsing finished in "
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(ParsingComplete - Start).count()
 				<< " ms\n";
-			io::Log << "Program execution finished in "
+			bf::io::Log << "Program execution finished in "
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(ExecutionComplete - Start).count()
 				<< " ms\n";
 		}
 	}
 	catch (const std::ios::failure&)
 	{
-		io::LogMessage("Unable to open file\n");
+		bf::io::LogMessage("Unable to open file\n");
 	}
 	catch (const std::exception& Exception)
 	{
-		io::LogMessage(Exception.what());
+		bf::io::LogMessage(Exception.what());
 
 		return EXIT_FAILURE;
 	}

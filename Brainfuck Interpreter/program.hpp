@@ -18,7 +18,7 @@ public:
 
 	bool operator==(Type) const;
 
-	static void SetParent(ProgramData* const, io::ProgramInput* const);
+	static void SetParent(ProgramData* const, bf::io::ProgramInput* const);
 	static void Orphan(const ProgramData* const);
 
 	union
@@ -33,7 +33,7 @@ public:
 	};
 
 	static ProgramData* Parent;
-	static io::ProgramInput* InputQueue;
+	static bf::io::ProgramInput* InputQueue;
 
 	static const std::array<void(*)(Instruction* const), Type::Stop + 1> FunctionPointers;
 };
@@ -44,7 +44,7 @@ class ProgramData
 	Memory Cells;
 
 public:
-	explicit ProgramData(io::ProgramInput&);
+	explicit ProgramData(bf::io::ProgramInput&);
 	~ProgramData();
 
 	void Run();

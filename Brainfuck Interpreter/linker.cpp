@@ -41,7 +41,7 @@ void ProgramData::LinkJumps()
 		else if (*Pointer == Instruction::Type::LoopEnd)
 		{
 			if (JumpTable.empty())
-				throw exception::UnmatchedOpen();
+				throw bf::exception::UnmatchedOpen();
 
 			Pointer->Pointer = std::next(JumpTable.top());
 			JumpTable.top()->Pointer = std::next(Pointer);
@@ -51,7 +51,7 @@ void ProgramData::LinkJumps()
 	}
 
 	if (!JumpTable.empty())
-		throw exception::UnmatchedOpen();
+		throw bf::exception::UnmatchedOpen();
 }
 
 void ProgramData::LinkFunctions()

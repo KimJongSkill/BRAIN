@@ -4,72 +4,75 @@
 #include <fstream>
 #include <sstream>
 
-namespace io
+namespace bf
 {
-	void OutputByte(const Memory::cell_type Character)
+	namespace io
 	{
-		std::cout.put(Character);
-	}
-
-	std::string Open(const std::string& Path)
-	{
-		std::stringstream Stream;
-		std::ifstream File;
-
-		File.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-		File.open(Path);
-
-		Stream << File.rdbuf();
-
-		return Stream.str();
-	}
-
-	OutputBuffer::OutputBuffer(const std::size_t Size) : BufferPointer(nullptr)
-	{
-		try
+		void OutputByte(const Memory::cell_type Character)
 		{
-			if (Size)
+			std::cout.put(Character);
+		}
+
+		std::string Open(const std::string& Path)
+		{
+			std::stringstream Stream;
+			std::ifstream File;
+
+			File.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+			File.open(Path);
+
+			Stream << File.rdbuf();
+
+			return Stream.str();
+		}
+
+		OutputBuffer::OutputBuffer(const std::size_t Size) : BufferPointer(nullptr)
+		{
+			try
 			{
-				BufferPointer = new Memory::cell_type[Size];
-				std::cout.rdbuf()->pubsetbuf(BufferPointer, Size);
+				if (Size)
+				{
+					BufferPointer = new Memory::cell_type[Size];
+					std::cout.rdbuf()->pubsetbuf(BufferPointer, Size);
+				}
+			}
+			catch (const std::bad_alloc&)
+			{
+				io::LogMessage("Unable to allocate output buffer\n");
 			}
 		}
-		catch (const std::bad_alloc&)
+
+		OutputBuffer::~OutputBuffer()
 		{
-			io::LogMessage("Unable to allocate output buffer\n");
+			if (BufferPointer != nullptr)
+			{
+				Flush();
+				delete[] BufferPointer;
+			}
 		}
-	}
 
-	OutputBuffer::~OutputBuffer()
-	{
-		if (BufferPointer != nullptr)
+		void OutputBuffer::Flush()
 		{
-			Flush();
-			delete[] BufferPointer;
+			std::cout.flush();
 		}
-	}
 
-	void OutputBuffer::Flush()
-	{
-		std::cout.flush();
-	}
+		ProgramInput::ProgramInput(std::string Injection, OutputBuffer& BufferRef) : InjectedData(std::move(Injection) + '\n'), Buffer(BufferRef) { }
 
-	ProgramInput::ProgramInput(std::string Injection, OutputBuffer& BufferRef) : InjectedData(std::move(Injection) + '\n'), Buffer(BufferRef) { }
-
-	Memory::cell_type ProgramInput::GetByte()
-	{
-		if (Index < InjectedData.length())
+		Memory::cell_type ProgramInput::GetByte()
 		{
-			auto Char = InjectedData[Index++];
+			if (Index < InjectedData.length())
+			{
+				auto Char = InjectedData[Index++];
 
-			OutputByte(Char);
-			Buffer.Flush();
+				OutputByte(Char);
+				Buffer.Flush();
 
-			return Char;
-		}
-		else
-		{
-			return std::cin.get();
+				return Char;
+			}
+			else
+			{
+				return std::cin.get();
+			}
 		}
 	}
 }

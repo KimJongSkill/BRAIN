@@ -10,7 +10,7 @@ const std::array<void(*)(Instruction* const), Instruction::Type::Stop + 1> Instr
 	[](Instruction* x) { std::advance(Parent->DataPointer, x->Value); },
 	[](Instruction* x) { *Parent->DataPointer += x->Value; },
 	[](Instruction* x) { *Parent->DataPointer = InputQueue->GetByte(); },
-	[](Instruction* x) { io::OutputByte(*Parent->DataPointer); },
+	[](Instruction* x) { bf::io::OutputByte(*Parent->DataPointer); },
 	[](Instruction* x) { if (*Parent->DataPointer == 0) Parent->InstructionPointer = x->Pointer; },
 	[](Instruction* x) { if (*Parent->DataPointer != 0) Parent->InstructionPointer = x->Pointer; },
 	[](Instruction* x) { std::fill_n(Parent->DataPointer, x->Value, 0); std::advance(Parent->DataPointer, x->Offset); },

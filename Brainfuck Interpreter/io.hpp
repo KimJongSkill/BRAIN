@@ -4,62 +4,65 @@
 
 #include <string>
 
-namespace io
+namespace bf
 {
-	void OutputByte(const Memory::cell_type);
-
-	std::string Open(const std::string&);
-
-	class OutputBuffer
+	namespace io
 	{
-	public:
-		explicit OutputBuffer(const std::size_t);
-		~OutputBuffer();
+		void OutputByte(const Memory::cell_type);
 
-		OutputBuffer(const OutputBuffer&) = delete;
-		OutputBuffer& operator=(const OutputBuffer&) = delete;
+		std::string Open(const std::string&);
 
-		void Flush();
+		class OutputBuffer
+		{
+		public:
+			explicit OutputBuffer(const std::size_t);
+			~OutputBuffer();
 
-	private:
-		Memory::cell_type* BufferPointer;
-	};
+			OutputBuffer(const OutputBuffer&) = delete;
+			OutputBuffer& operator=(const OutputBuffer&) = delete;
 
-	struct MessageLog
-	{
-		bool Flag;
-	} constexpr Log{ true };
+			void Flush();
 
-	template <class Type>
-	constexpr void LogMessage(const Type& Message, bool Format = true)
-	{
-		if (Format)
-			std::clog << "[BRAIN] ";
+		private:
+			Memory::cell_type* BufferPointer;
+		};
 
-		std::clog << Message;
+		struct MessageLog
+		{
+			bool Flag;
+		} constexpr Log{ true };
+
+		template <class Type>
+		constexpr void LogMessage(const Type& Message, bool Format = true)
+		{
+			if (Format)
+				std::clog << "[BRAIN] ";
+
+			std::clog << Message;
+		}
+
+		template <class Type>
+		const MessageLog operator<<(const MessageLog& Object, const Type& Message)
+		{
+			LogMessage(Message, Object.Flag);
+
+			constexpr MessageLog Temp{ false };
+			return Temp;
+		}
+
+		class ProgramInput
+		{
+		public:
+			ProgramInput() = default;
+			ProgramInput(std::string, OutputBuffer&);
+			~ProgramInput() = default;
+
+			Memory::cell_type GetByte();
+
+		private:
+			const std::string InjectedData;
+			std::string::size_type Index = 0;
+			OutputBuffer& Buffer;
+		};
 	}
-
-	template <class Type>
-	const MessageLog operator<<(const MessageLog& Object, const Type& Message)
-	{
-		LogMessage(Message, Object.Flag);
-		
-		constexpr MessageLog Temp{ false };
-		return Temp;
-	}
-
-	class ProgramInput
-	{
-	public:
-		ProgramInput() = default;
-		ProgramInput(std::string, OutputBuffer&);
-		~ProgramInput() = default;
-
-		Memory::cell_type GetByte();
-
-	private:
-		const std::string InjectedData;
-		std::string::size_type Index = 0;
-		OutputBuffer& Buffer;
-	};
 }

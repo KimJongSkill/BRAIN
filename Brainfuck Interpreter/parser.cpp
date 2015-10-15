@@ -79,7 +79,7 @@ void ProgramData::Parse(const std::string& Source)
 				auto Iterator = std::find(std::rbegin(Text), std::rend(Text), Instruction::Type::LoopStart);
 				
 				if (Iterator == std::rend(Text))
-					throw exception::UnmatchedClose();
+					throw bf::exception::UnmatchedClose();
 
 				return &*Iterator;
 			}();
