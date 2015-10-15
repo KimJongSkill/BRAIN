@@ -1,5 +1,7 @@
 #include "program.hpp"
 
+#include "exception.hpp"
+
 void ProgramData::Parse(const std::string& Source)
 {
 	auto MovePointerLambda = [&](Instruction::value_type x)
@@ -72,7 +74,15 @@ void ProgramData::Parse(const std::string& Source)
 			Text.emplace_back(Instruction::Type::LoopStart);
 			break;
 		case ']':
-			Instruction* const BeginPointer = &*std::find(std::rbegin(Text), std::rend(Text), Instruction::Type::LoopStart);
+			Instruction* const BeginPointer = [&]
+			{
+				auto Iterator = std::find(std::rbegin(Text), std::rend(Text), Instruction::Type::LoopStart);
+				
+				if (Iterator == std::rend(Text))
+					throw exception::UnmatchedClose();
+
+				return &*Iterator;
+			}();
 			Instruction* const EndPointer = std::data(Text) + std::size(Text);
 
 			if (DropEmptyLoop(BeginPointer, EndPointer))
