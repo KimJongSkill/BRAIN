@@ -67,7 +67,7 @@ int main(int argc, const char* argv[])
 	}
 	catch (const std::exception& Exception)
 	{
-		io::LogMessage(Exception.what() + '\n');
+		io::LogMessage(Exception.what());
 
 		return EXIT_FAILURE;
 	}

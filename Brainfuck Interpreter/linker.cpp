@@ -1,5 +1,7 @@
 #include "program.hpp"
 
+#include "exception.hpp"
+
 #include <stack>
 
 void ProgramData::Link()
@@ -39,7 +41,7 @@ void ProgramData::LinkJumps()
 		else if (*Pointer == Instruction::Type::LoopEnd)
 		{
 			if (JumpTable.empty())
-				throw std::runtime_error("Unmatched ']'");
+				throw exception::UnmatchedOpen();
 
 			Pointer->Pointer = std::next(JumpTable.top());
 			JumpTable.top()->Pointer = std::next(Pointer);
@@ -49,7 +51,7 @@ void ProgramData::LinkJumps()
 	}
 
 	if (!JumpTable.empty())
-		throw std::runtime_error("Unmatched '['");
+		throw exception::UnmatchedOpen();
 }
 
 void ProgramData::LinkFunctions()

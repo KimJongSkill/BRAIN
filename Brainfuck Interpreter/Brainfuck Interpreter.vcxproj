@@ -172,6 +172,7 @@
     <ClCompile Include="program.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="exception.hpp" />
     <ClInclude Include="program.hpp" />
     <ClInclude Include="io.hpp" />
     <ClInclude Include="memory.hpp" />
